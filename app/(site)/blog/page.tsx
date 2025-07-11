@@ -2,15 +2,15 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { getBaseUrl } from "@/lib/utils/url.util";
 import type { BlogListOptions, BlogListResponse } from "@/lib/types";
 
-// Import new blog sections
-import { BlogHero } from "@/components/blog/sections/blog-hero";
-import { FeaturedArticles } from "@/components/blog/sections/featured-articles";
-import { CategoryHub } from "@/components/blog/sections/category-hub";
-import { ArticlesGrid } from "@/components/blog/sections/articles-grid";
-import { NewsletterCTA } from "@/components/blog/sections/newsletter-cta";
+// Import Site Wave blog sections
+import { SiteWaveBlogHero } from "@/components/blog/sections/site-wave-blog-hero";
+import { SiteWaveFeaturedArticles } from "@/components/blog/sections/site-wave-featured-articles";
+import { SiteWaveCategoryHub } from "@/components/blog/sections/site-wave-category-hub";
+import { SiteWaveArticlesGrid } from "@/components/blog/sections/site-wave-articles-grid";
+import { SiteWaveNewsletterCTA } from "@/components/blog/sections/site-wave-newsletter-cta";
 
 // Import client component for filters (interactive features only)
-import { BlogFilters } from "@/components/blog/BlogFilters";
+import { SiteWaveBlogFilters } from "@/components/blog/SiteWaveBlogFilters";
 import { getBlogCategories, getBlogPosts } from "@/lib/api/blog.service";
 
 // Force dynamic rendering for cache invalidation
@@ -82,7 +82,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
     // Continue with empty data - better than crashing
   }
 
-  // Transform data for our new components
+  // Transform data for Site Wave components
   const transformedPosts = blogData.posts.map((post) => ({
     id: post.id,
     title: post.title,
@@ -113,9 +113,9 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
     name: cat.name,
     slug: cat.slug,
     count: cat.count,
-    description: getCategoryDescription(cat.name),
-    color: getCategoryColor(cat.name),
-    icon: getCategoryIcon(cat.name),
+    description: getSiteWaveCategoryDescription(cat.name),
+    color: getSiteWaveCategoryColor(cat.name),
+    icon: getSiteWaveCategoryIcon(cat.name),
     trending: Math.random() > 0.6,
   }));
 
@@ -131,9 +131,9 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
       <JsonLd
         type="WebSite"
         data={{
-          name: "Blog",
+          name: "Site Wave Blog - Digital Marketing Insights for Southwest Florida",
           description:
-            "Insights, tutorials, and industry trends in technology and design",
+            "Expert insights on website development, SEO, digital marketing, and business automation for small businesses in Cape Coral, Fort Myers, and Naples, FL.",
           url: `${baseUrl}/blog`,
         }}
       />
@@ -141,24 +141,28 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
       <div className="min-h-screen">
         {/* Hero Section - Only on main page */}
         {showHero && (
-          <BlogHero
+          <SiteWaveBlogHero
             totalPosts={blogData.totalPosts}
-            totalAuthors={25}
-            totalReads={blogData.totalPosts * 347} // Estimated reads
+            totalBusinessesHelped={150}
+            totalSWFLReaders={blogData.totalPosts * 85} // Local focus
           />
         )}
 
         {/* Featured Articles - Only on main page */}
-        {showFeatured && <FeaturedArticles articles={transformedPosts} />}
+        {showFeatured && (
+          <SiteWaveFeaturedArticles articles={transformedPosts} />
+        )}
 
         {/* Category Hub - Only on main page */}
-        {showCategories && <CategoryHub categories={transformedCategories} />}
+        {showCategories && (
+          <SiteWaveCategoryHub categories={transformedCategories} />
+        )}
 
         {/* Search and Filter Section - Client Component */}
-        <section className="py-8 bg-muted/30">
+        <section className="py-12 bg-gradient-to-br from-soft-sand/20 via-background to-soft-sand/20">
           <div className="container">
             <div className="mx-auto max-w-6xl">
-              <BlogFilters
+              <SiteWaveBlogFilters
                 categories={categories}
                 currentCategory={currentCategory}
                 currentSearch={currentSearch}
@@ -170,10 +174,14 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
         </section>
 
         {/* Articles Grid */}
-        <ArticlesGrid
+        <SiteWaveArticlesGrid
           articles={transformedPosts}
-          title={getGridTitle(currentSearch, currentCategory, categories)}
-          description={getGridDescription(
+          title={getSiteWaveGridTitle(
+            currentSearch,
+            currentCategory,
+            categories
+          )}
+          description={getSiteWaveGridDescription(
             currentSearch,
             currentCategory,
             blogData.totalPosts
@@ -182,70 +190,69 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
           className={
             isFiltered
               ? "bg-background"
-              : "bg-gradient-to-br from-background via-muted/10 to-background"
+              : "bg-gradient-to-br from-background via-soft-sand/10 to-background"
           }
         />
 
-        {/* Newsletter CTA */}
-        <NewsletterCTA
-          subscriberCount={50000}
-          className="bg-gradient-to-br from-muted/20 via-background to-muted/20"
+        {/* Newsletter CTA - Site Wave themed */}
+        <SiteWaveNewsletterCTA
+          subscriberCount={2500}
+          localBusinessCount={150}
+          className="bg-gradient-to-br from-ocean-blue/5 via-background to-coral-orange/5"
         />
       </div>
     </>
   );
 }
 
-// Helper functions for category data
-function getCategoryDescription(name: string): string {
+// Helper functions for Site Wave themed categories
+function getSiteWaveCategoryDescription(name: string): string {
   const descriptions: Record<string, string> = {
-    Development: "Code tutorials, frameworks, and best practices",
-    Design: "UI/UX, visual design, and creative workflows",
-    Performance: "Optimization, speed, and efficiency techniques",
-    Strategy: "Business insights and growth strategies",
-    Innovation: "Emerging tech and future trends",
-    "AI & ML": "Artificial intelligence and machine learning",
-    Technology: "Latest tech trends and innovations",
-    Tutorial: "Step-by-step guides and how-tos",
-    Opinion: "Thought leadership and industry perspectives",
-    News: "Industry news and updates",
+    "Website Development":
+      "Custom websites that convert visitors into customers",
+    "SEO & Local Marketing":
+      "Get found by Southwest Florida customers on Google",
+    "Digital Marketing": "Social media, ads, and online presence strategies",
+    "Business Automation": "Save time with smart CRM and automation tools",
+    "Case Studies": "Real results from SWFL businesses like yours",
+    "Industry Insights": "Stay ahead with the latest digital trends",
+    "How-To Guides": "Step-by-step tutorials for business growth",
+    "Local Business Tips": "Proven strategies for Southwest Florida success",
   };
-  return descriptions[name] || "Expert insights and valuable content";
+  return (
+    descriptions[name] || "Expert insights for growing your business online"
+  );
 }
 
-function getCategoryColor(name: string): string {
+function getSiteWaveCategoryColor(name: string): string {
   const colors: Record<string, string> = {
-    Development: "from-blue-500 to-cyan-500",
-    Design: "from-purple-500 to-pink-500",
-    Performance: "from-green-500 to-emerald-500",
-    Strategy: "from-orange-500 to-red-500",
-    Innovation: "from-indigo-500 to-purple-500",
-    "AI & ML": "from-teal-500 to-blue-500",
-    Technology: "from-blue-600 to-indigo-600",
-    Tutorial: "from-green-600 to-teal-600",
-    Opinion: "from-purple-600 to-pink-600",
-    News: "from-red-500 to-orange-500",
+    "Website Development": "from-ocean-blue to-ocean-blue/70",
+    "SEO & Local Marketing": "from-coral-orange to-coral-orange/70",
+    "Digital Marketing": "from-ocean-blue/80 to-coral-orange/80",
+    "Business Automation": "from-deep-navy to-ocean-blue",
+    "Case Studies": "from-coral-orange/80 to-deep-navy/80",
+    "Industry Insights": "from-ocean-blue to-deep-navy",
+    "How-To Guides": "from-coral-orange to-ocean-blue/70",
+    "Local Business Tips": "from-deep-navy/80 to-coral-orange/80",
   };
-  return colors[name] || "from-gray-500 to-slate-500";
+  return colors[name] || "from-ocean-blue to-coral-orange";
 }
 
-function getCategoryIcon(name: string): string {
+function getSiteWaveCategoryIcon(name: string): string {
   const icons: Record<string, string> = {
-    Development: "code",
-    Design: "palette",
-    Performance: "zap",
-    Strategy: "target",
-    Innovation: "rocket",
-    "AI & ML": "brain",
-    Technology: "layers",
-    Tutorial: "code",
-    Opinion: "brain",
-    News: "zap",
+    "Website Development": "code",
+    "SEO & Local Marketing": "search",
+    "Digital Marketing": "megaphone",
+    "Business Automation": "zap",
+    "Case Studies": "trophy",
+    "Industry Insights": "trending-up",
+    "How-To Guides": "book-open",
+    "Local Business Tips": "map-pin",
   };
   return icons[name] || "code";
 }
 
-function getGridTitle(
+function getSiteWaveGridTitle(
   currentSearch: string,
   currentCategory: string,
   categories: Array<{ name: string; slug: string; count: number }>
@@ -257,10 +264,10 @@ function getGridTitle(
     const category = categories.find((c) => c.slug === currentCategory);
     return `${category?.name || currentCategory} Articles`;
   }
-  return "Latest Articles";
+  return "Latest Insights for SWFL Businesses";
 }
 
-function getGridDescription(
+function getSiteWaveGridDescription(
   currentSearch: string,
   currentCategory: string,
   totalPosts: number
@@ -273,7 +280,7 @@ function getGridDescription(
     } found for "${currentSearch}"`;
   }
   if (currentCategory !== "all") {
-    return `Explore our collection of expert articles and insights`;
+    return `Expert advice to help your Southwest Florida business thrive online`;
   }
-  return "Stay updated with our latest articles and insights";
+  return "Practical insights to grow your business in Cape Coral, Fort Myers, Naples, and beyond";
 }
