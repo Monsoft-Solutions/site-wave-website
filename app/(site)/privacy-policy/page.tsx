@@ -6,115 +6,155 @@ const privacyContent = `# Privacy Policy
 
 *Last updated: ${new Date().toLocaleDateString()}*
 
-## Template Usage and Privacy
+## About Site Wave
 
-This website template was developed by **Monsoft Solutions, LLC** ([https://monsoftsolutions.com](https://monsoftsolutions.com)) and is provided free of charge for both personal and commercial use.
+**Site Wave** is a division of **Monsoft Solutions, LLC** that provides digital marketing, website development, SEO, and business automation services to small businesses and entrepreneurs in Southwest Florida, including Cape Coral, Fort Myers, Naples, and surrounding areas.
 
 ## Information We Collect
 
-### Template Usage
-When you use this website template, you may collect various types of information from your visitors:
+### Personal Information
+When you use our services or visit our website, we may collect:
 
-- **Personal Information**: Information you choose to collect through contact forms, newsletter signups, or other interactive features
-- **Analytics Data**: Information about how visitors interact with your website
-- **Technical Information**: Browser type, device information, IP addresses, and other technical data
+- **Contact Information**: Name, email address, phone number, business name, and mailing address
+- **Business Information**: Industry, services offered, target audience, and business goals
+- **Website Analytics**: Information about how you interact with our website through Google Analytics
+- **Communication Records**: Records of our conversations, emails, and support interactions
+- **Payment Information**: Billing details and payment history (processed securely through third-party providers)
 
-### Template Modifications
-This template is free to modify and customize according to your needs. Any data collection practices are entirely dependent on how you implement and customize the template.
+### Service-Specific Data Collection
 
-## How Information is Used
+**Website Development Services**:
+- Content provided for your website
+- Brand assets (logos, images, documents)
+- Hosting and domain preferences
 
-The purpose and use of any collected information depends entirely on your implementation of this template:
+**SEO & Marketing Services**:
+- Current website performance data
+- Social media account information
+- Google Business Profile access
+- Competitor analysis data
 
-- To provide and maintain your website service
-- To communicate with visitors and customers
-- To improve your website and user experience
-- To comply with legal obligations
+**Automation & CRM Services**:
+- Lead data and customer information you share with us
+- Business process documentation
+- Integration requirements and existing tool access
+
+## How We Use Your Information
+
+We use collected information to:
+
+- **Deliver Services**: Provide the digital marketing, website, SEO, and automation services you've contracted
+- **Communication**: Keep you informed about project progress, send service updates, and provide customer support
+- **Service Improvement**: Analyze service performance and improve our offerings
+- **Legal Compliance**: Meet legal obligations and protect against fraud
+- **Marketing**: Send relevant updates about our services (with your consent)
+
+## Information Sharing and Disclosure
+
+### Third-Party Service Providers
+We work with trusted partners to deliver our services:
+
+- **Hosting Providers**: For website hosting and domain management
+- **Analytics Platforms**: Google Analytics, Search Console, and similar tools
+- **Marketing Platforms**: Social media management tools, email marketing services
+- **Payment Processors**: Secure payment processing (we never store credit card information)
+- **CRM and Automation Tools**: Airtable, automation platforms, and similar services
+
+### Client Data
+- We maintain strict confidentiality of your business information
+- Client data is never shared with competitors or unauthorized parties
+- We may use aggregated, anonymized data for case studies (with permission)
+
+### Legal Requirements
+We may disclose information when required by law, court order, or to protect our rights and safety.
 
 ## Data Security
 
-As the implementer of this template, you are responsible for:
+We implement industry-standard security measures:
 
-- Implementing appropriate security measures for any data you collect
-- Ensuring compliance with applicable privacy laws (GDPR, CCPA, etc.)
-- Regularly updating security practices and dependencies
+- **Encryption**: All data transmission is encrypted using SSL/TLS
+- **Access Controls**: Limited access to client data on a need-to-know basis
+- **Regular Updates**: Security patches and software updates are applied promptly
+- **Secure Storage**: Client data is stored on secure, reputable platforms
+- **Staff Training**: Our team is trained on data privacy and security practices
 
-## Template Distribution and Modification
+## Data Retention
 
-This template is distributed under a free-to-use license:
+- **Active Clients**: We retain data for the duration of our service relationship
+- **Former Clients**: Data is retained for up to 7 years for business and legal purposes
+- **Marketing Data**: Email subscribers can unsubscribe at any time
+- **Website Analytics**: Follows Google Analytics retention settings (26 months by default)
 
-- ✅ **Free to use** for personal and commercial projects
-- ✅ **Free to modify** and customize as needed
-- ✅ **No attribution required** (though appreciated)
-- ✅ **No usage restrictions** on the template itself
+## Your Rights and Choices
 
-## Third-Party Services
+You have the right to:
 
-This template may include integrations with third-party services such as:
+- **Access**: Request a copy of the personal information we have about you
+- **Correction**: Request correction of inaccurate information
+- **Deletion**: Request deletion of your data (subject to legal requirements)
+- **Portability**: Receive your data in a portable format
+- **Opt-Out**: Unsubscribe from marketing communications
+- **Restrict Processing**: Limit how we use your information
 
-- Analytics providers (Google Analytics, etc.)
-- Content delivery networks
-- Social media platforms
-- Contact form services
+## Cookies and Tracking
 
-Each third-party service has its own privacy policy that you should review and ensure compliance with.
+Our website uses:
 
-## Template Updates
+- **Essential Cookies**: Required for website functionality
+- **Analytics Cookies**: Google Analytics to understand website usage
+- **Marketing Cookies**: For retargeting and advertising (with consent)
 
-- **No Automatic Updates**: This template does not automatically update or collect usage data
-- **Version Control**: All updates are manual and under your control
-- **Backward Compatibility**: Updates aim to maintain backward compatibility when possible
+You can control cookie preferences through your browser settings.
 
-## Your Responsibilities
+## Third-Party Websites
 
-As the user of this template, you are responsible for:
+Our services may link to or integrate with third-party websites and services. Each has its own privacy policy that we encourage you to review:
 
-1. **Legal Compliance**: Ensuring your use complies with applicable laws
-2. **Privacy Notices**: Creating appropriate privacy notices for your specific use case
-3. **Data Protection**: Implementing proper data protection measures
-4. **User Consent**: Obtaining necessary user consents as required by law
+- Google (Analytics, Ads, Business Profile)
+- Social media platforms (Facebook, Instagram, LinkedIn)
+- Payment processors
+- Hosting and domain providers
 
-## Template Support
+## Children's Privacy
 
-For questions about this template:
+Our services are designed for businesses and we do not knowingly collect information from children under 13.
 
-- **Developer**: Monsoft Solutions, LLC
-- **Website**: [https://monsoftsolutions.com](https://monsoftsolutions.com)
-- **Support**: Available through the developer's website
+## Southwest Florida Focus
 
-## Disclaimer
+As a local business serving Southwest Florida, we understand the importance of community trust and maintain high standards for protecting local business information.
 
-This template is provided "as is" without any warranties. The template developer is not responsible for:
+## Updates to This Policy
 
-- How you implement or modify the template
-- Data collection practices you implement
-- Legal compliance of your specific implementation
-- Any damages arising from template usage
+We may update this privacy policy to reflect:
 
-## Changes to This Privacy Policy
+- Changes in our services or business practices
+- New legal requirements
+- Technology updates or security improvements
 
-This privacy policy template may be updated to reflect:
+Significant changes will be communicated via email or website notice.
 
-- Changes in privacy law requirements
-- Template feature updates
-- Best practice improvements
+## Contact Us
 
-## Contact Information
+For questions about this privacy policy or to exercise your rights:
 
-For questions about this template's privacy aspects, contact:
+**Site Wave by Monsoft Solutions, LLC**  
+Website: [https://sitewavefl.com](https://sitewavefl.com)  
+Email: [Contact through our website contact form]  
+Service Area: Cape Coral, Fort Myers, Naples, and Southwest Florida
 
-**Monsoft Solutions, LLC**  
-Website: [https://monsoftsolutions.com](https://monsoftsolutions.com)
+## Effective Date
+
+This privacy policy is effective as of the last updated date shown above and applies to all information collected by Site Wave.
 
 ---
 
-*This privacy policy template is provided as a starting point. You should customize it to reflect your specific data collection and usage practices, and ensure compliance with applicable laws in your jurisdiction.*
+*Your privacy is important to us. We're committed to protecting your information while helping your Southwest Florida business succeed online.*
 `;
 
 export const metadata: Metadata = generateSeoMetadata({
-  title: "Privacy Policy",
+  title: "Privacy Policy - Site Wave Digital Marketing",
   description:
-    "Privacy policy for the free website template developed by Monsoft Solutions, LLC. Learn about template usage, modifications, and your responsibilities.",
+    "Privacy policy for Site Wave, providing digital marketing, website development, and SEO services to Southwest Florida businesses in Cape Coral, Fort Myers, and Naples.",
 });
 
 export default function PrivacyPolicyPage() {

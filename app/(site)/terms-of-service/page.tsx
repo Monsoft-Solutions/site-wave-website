@@ -6,168 +6,203 @@ const termsContent = `# Terms of Service
 
 *Last updated: ${new Date().toLocaleDateString()}*
 
-## Template License and Usage
+## About Site Wave
 
-This website template was developed by **Monsoft Solutions, LLC** ([https://monsoftsolutions.com](https://monsoftsolutions.com)) and is provided under the following terms.
+**Site Wave** is a division of **Monsoft Solutions, LLC** that provides digital marketing, website development, SEO, and business automation services to small businesses and entrepreneurs in Southwest Florida, including Cape Coral, Fort Myers, Naples, and surrounding areas.
 
-## License Grant
+## Acceptance of Terms
 
-By using this template, you are granted a **free, non-exclusive, worldwide license** to:
+By engaging our services, visiting our website, or entering into an agreement with Site Wave, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.
 
-- ✅ **Use** the template for personal and commercial projects
-- ✅ **Modify** the template code and design as needed
-- ✅ **Distribute** websites built with this template
-- ✅ **Sell** services or products using websites built with this template
+## Our Services
 
-## Template Permissions
+### Website Development & Design
+- Custom website development and design
+- Website redesigns and improvements
+- E-commerce website development
+- Mobile-responsive design implementation
+- Website maintenance and updates
 
-### What You Can Do
-- Use the template for unlimited personal projects
-- Use the template for unlimited commercial projects
-- Modify, customize, and extend the template functionality
-- Remove or modify any template branding or credits
-- Use the template as a base for client work
-- Create multiple websites using this template
+### SEO & Digital Marketing
+- Search Engine Optimization (SEO)
+- Local SEO and Google Business Profile optimization
+- Content creation and blog development
+- Social media setup and optimization
+- Google Ads and Meta advertising campaigns
 
-### What You Cannot Do
-- **Redistribute the template** as a template or boilerplate
-- **Sell or license** the template itself as a product
-- **Claim ownership** of the original template code
-- **Hold the developer liable** for any issues arising from template usage
+### Business Automation & Analytics
+- Google Analytics and Search Console setup
+- CRM implementation and automation
+- Lead generation and management systems
+- Business process automation
+- Integration with third-party tools and platforms
 
-## Template Quality and Support
+## Service Agreement Terms
 
-### "As Is" Basis
-This template is provided **"as is"** without warranties of any kind, including but not limited to:
+### Project Scope
+- All services are provided based on agreed-upon project scope and deliverables
+- Changes to project scope may result in additional charges
+- Timeline estimates are provided in good faith but may vary based on project complexity
+- Client cooperation and timely feedback are required for successful project completion
 
-- Merchantability or fitness for a particular purpose
-- Error-free operation or uninterrupted service
-- Compatibility with all systems or browsers
-- Security against all potential vulnerabilities
+### Payment Terms
+- **Payment Schedule**: As outlined in individual service agreements
+- **Late Payments**: Late fees may apply to overdue invoices
+- **Refund Policy**: Refunds are handled on a case-by-case basis
+- **Disputed Charges**: Must be reported within 30 days of invoice date
 
-### Support Limitations
-- **No guaranteed support**: Support is provided on a best-effort basis
-- **Community support**: Primary support through community channels
-- **Developer contact**: Available through [https://monsoftsolutions.com](https://monsoftsolutions.com)
-- **No SLA**: No service level agreements or guaranteed response times
-
-## User Responsibilities
-
-### Implementation
-You are responsible for:
-
-1. **Proper implementation** of the template for your use case
-2. **Security measures** for your website and any data you collect
-3. **Legal compliance** in your jurisdiction and industry
-4. **Regular updates** to dependencies and security patches
-5. **Backup and recovery** of your website and data
-
-### Content and Compliance
-- Ensure all content you add complies with applicable laws
-- Implement appropriate privacy policies and terms for your specific use
-- Obtain necessary licenses for any third-party content you add
-- Comply with accessibility standards as required
+### Client Responsibilities
+- Provide accurate business information and requirements
+- Supply necessary content, images, and brand materials
+- Respond to requests for feedback within reasonable timeframes
+- Maintain ownership and legality of all provided content
+- Comply with platform terms of service (Google, Facebook, etc.)
 
 ## Intellectual Property
 
-### Template Components
-- **Original code**: Owned by Monsoft Solutions, LLC
-- **Third-party libraries**: Subject to their respective licenses
-- **Design elements**: Available for use as part of this template
-- **Documentation**: Provided under the same license terms
+### Client-Owned Content
+- You retain ownership of all content, images, and materials you provide
+- You grant us license to use these materials for your project delivery
+- You warrant that you have rights to all content you provide to us
 
-### Your Content
-- You retain all rights to content you create using this template
-- You are responsible for ensuring you have rights to any content you add
-- The template developer has no claim to your implementation or content
+### Site Wave Work Product
+- Custom code, designs, and strategies developed specifically for your project become your property upon full payment
+- We retain rights to general methodologies, processes, and non-client-specific knowledge
+- We may showcase completed work in our portfolio (with your permission)
+
+### Third-Party Assets
+- Third-party plugins, themes, or tools remain subject to their respective licenses
+- We ensure all third-party components are properly licensed for your use
+
+## Service Guarantees and Limitations
+
+### What We Guarantee
+- Professional service delivery according to agreed specifications
+- Industry-standard security practices for data handling
+- Timely communication and project updates
+- Compliance with platform best practices and guidelines
+
+### What We Cannot Guarantee
+- **Search Rankings**: SEO results depend on many factors beyond our control
+- **Advertising Performance**: Ad campaign results vary based on market conditions
+- **Website Traffic**: Organic traffic growth depends on content quality and market factors
+- **Third-Party Platform Changes**: We're not responsible for changes to Google, Facebook, etc.
 
 ## Limitation of Liability
 
-### Developer Liability
-Monsoft Solutions, LLC and its developers shall not be liable for:
+### Service Limitations
+Site Wave's liability is limited to the amount paid for the specific services in question. We are not liable for:
 
-- **Direct damages** resulting from template usage
-- **Indirect or consequential damages** including lost profits
-- **Data loss or corruption** from template implementation
-- **Security breaches** in your implementation
-- **Downtime or service interruptions** of your website
+- **Indirect Damages**: Lost profits, business interruption, or consequential damages
+- **Third-Party Actions**: Changes to Google algorithms, platform policy updates, etc.
+- **Data Loss**: Though we implement best practices, you're responsible for maintaining backups
+- **Performance Metrics**: We optimize for best practices but cannot guarantee specific results
 
-### Maximum Liability
-The maximum liability of the template developer shall not exceed the amount paid for the template (which is $0 for this free template).
+### Force Majeure
+We are not responsible for delays or failures due to circumstances beyond our control, including natural disasters, technical failures, or changes in third-party services.
 
-## Third-Party Services
+## Website Hosting and Maintenance
 
-### Integrations
-This template may include or support integrations with:
+### Hosting Services
+- Website hosting recommendations are provided based on your needs
+- You maintain ownership and control of your hosting account
+- We can manage hosting on your behalf with proper access credentials
 
-- Analytics services (Google Analytics, etc.)
-- Content delivery networks
-- Social media platforms
-- Email services
-- Payment processors
+### Ongoing Maintenance
+- Website maintenance services are available separately
+- Security updates and backups are recommended but not automatically included
+- You are responsible for keeping content current and accurate
 
-### Third-Party Terms
-- Each service has its own terms and conditions
-- You are responsible for compliance with third-party terms
-- The template developer is not responsible for third-party service changes
+## Confidentiality
 
-## Updates and Modifications
+### Client Information
+- We maintain strict confidentiality of all business information shared with us
+- Client data is never shared with unauthorized parties
+- We may use aggregated, anonymized data for case studies (with permission)
 
-### Template Updates
-- Updates are provided on a voluntary basis
-- No guarantee of backward compatibility
-- You are responsible for testing updates before deployment
-- Previous versions remain available for your use
-
-### Modification Rights
-- You may modify the template without restriction
-- Modified versions are your responsibility to maintain
-- No obligation to share modifications with the community
+### Non-Disclosure
+- Both parties agree to keep confidential information private
+- This obligation continues beyond the termination of our service relationship
 
 ## Termination
 
-### License Termination
-This license remains in effect until:
+### Client Termination
+- You may terminate services with written notice
+- Payment is due for all work completed up to termination date
+- We will provide completed work and transfer ownership as applicable
 
-- You choose to stop using the template
-- You materially breach these terms
-- Legal requirements necessitate termination
+### Site Wave Termination
+- We may terminate services for non-payment or breach of terms
+- We will provide reasonable notice except in cases of material breach
+- You remain responsible for payment of services rendered
 
-### Effect of Termination
-- You may continue using existing implementations
-- No obligation to remove existing websites built with the template
-- Cannot create new implementations after termination
+## Dispute Resolution
 
-## Governing Law
+### Initial Resolution
+- Disputes should first be addressed through direct communication
+- We're committed to finding mutually acceptable solutions
+- Good faith effort to resolve issues is expected from both parties
 
-These terms are governed by the laws of the jurisdiction where Monsoft Solutions, LLC is established, without regard to conflict of law principles.
+### Formal Disputes
+- Disputes will be governed by Florida state law
+- Venue for legal proceedings is in Lee County, Florida
+- Both parties agree to attempt mediation before litigation
+
+## Service Areas and Local Focus
+
+Site Wave proudly serves businesses throughout Southwest Florida, including:
+- Cape Coral
+- Fort Myers
+- Naples
+- Bonita Springs
+- Estero
+- And surrounding SWFL communities
+
+## Platform Compliance
+
+### Third-Party Platforms
+We ensure compliance with terms of service for:
+- Google (Analytics, Ads, Business Profile, Search Console)
+- Meta platforms (Facebook, Instagram)
+- Social media platforms
+- Hosting and domain providers
+
+### Policy Changes
+- We monitor platform policy changes and update strategies accordingly
+- Clients will be notified of significant changes affecting their services
+
+## Updates to Terms
+
+These terms may be updated to reflect:
+- Changes in our service offerings
+- Legal or regulatory requirements
+- Industry best practices
+- Platform policy updates
+
+Significant changes will be communicated via email or website notice.
 
 ## Contact Information
 
-For questions about these terms:
+For questions about these terms or our services:
 
-**Monsoft Solutions, LLC**  
-Website: [https://monsoftsolutions.com](https://monsoftsolutions.com)
+**Site Wave by Monsoft Solutions, LLC**  
+Website: [https://sitewavefl.com](https://sitewavefl.com)  
+Email: [Contact through our website contact form]  
+Service Area: Cape Coral, Fort Myers, Naples, and Southwest Florida
 
-## Changes to Terms
+## Effective Date
 
-These terms may be updated to reflect:
-
-- Changes in applicable law
-- Template feature updates
-- Community feedback and best practices
-
-Continued use of the template after changes constitutes acceptance of updated terms.
+These terms are effective as of the last updated date shown above and apply to all current and future service agreements with Site Wave.
 
 ---
 
-*By using this template, you acknowledge that you have read, understood, and agree to be bound by these terms of service.*
+*By engaging our services, you acknowledge that you have read, understood, and agree to be bound by these terms of service. We're committed to helping your Southwest Florida business succeed online.*
 `;
 
 export const metadata: Metadata = generateSeoMetadata({
-  title: "Terms of Service",
+  title: "Terms of Service - Site Wave Digital Marketing",
   description:
-    "Terms of service for the free website template developed by Monsoft Solutions, LLC. Learn about usage rights, permissions, and responsibilities.",
+    "Terms of service for Site Wave's digital marketing, website development, and SEO services for Southwest Florida businesses in Cape Coral, Fort Myers, and Naples.",
 });
 
 export default function TermsOfServicePage() {
