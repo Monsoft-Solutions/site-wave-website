@@ -24,6 +24,9 @@ import {
   Palette,
   Star,
   Zap,
+  ChevronDown,
+  Grid3X3,
+  List,
 } from "lucide-react";
 import { Service } from "@/lib/types/service.type";
 
@@ -33,6 +36,10 @@ interface SiteWaveServicesGridProps {
   isLoading: boolean;
   error?: string | null;
 }
+
+// Configuration constants
+const SERVICES_PER_PAGE = 9; // 3x3 grid - clean visual layout
+const FEATURED_SERVICES_COUNT = 6; // Show top 6 featured services initially
 
 // Icon mapping for services
 const serviceIcons = {
@@ -61,6 +68,16 @@ const serviceIcons = {
   default: Globe,
 };
 
+// Featured service titles (you can customize this list)
+const FEATURED_SERVICES = [
+  "Custom Website Development",
+  "Website Redesign & Optimization",
+  "Local SEO Optimization",
+  "E-commerce Solutions",
+  "Google Business Profile Management",
+  "Social Media Setup & Content",
+];
+
 export function SiteWaveServicesGrid({
   services,
   categories,
@@ -69,14 +86,98 @@ export function SiteWaveServicesGrid({
 }: SiteWaveServicesGridProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [viewMode, setViewMode] = useState<"featured" | "all" | "category">(
+    "featured"
+  );
   const [ref, inView] = useInView({
     threshold: 0.1,
     triggerOnce: true,
   });
 
-  const filteredServices = selectedCategory
-    ? services.filter((service) => service.category === selectedCategory)
-    : services;
+  // Smart filtering and pagination logic
+  const getDisplayServices = () => {
+    let filteredServices = services;
+
+    // Apply category filter if selected
+    if (selectedCategory) {
+      filteredServices = services.filter(
+        (service) => service.category === selectedCategory
+      );
+      setViewMode("category");
+      return {
+        services: filteredServices,
+        totalPages: Math.ceil(filteredServices.length / SERVICES_PER_PAGE),
+        showPagination: filteredServices.length > SERVICES_PER_PAGE,
+        isComplete: true,
+      };
+    }
+
+    // If "All Services" is selected, show based on view mode
+    if (viewMode === "featured") {
+      // Show featured services first
+      const featuredServices = services.filter((service) =>
+        FEATURED_SERVICES.includes(service.title)
+      );
+      const remainingServices = services.filter(
+        (service) => !FEATURED_SERVICES.includes(service.title)
+      );
+
+      // Combine featured + some remaining to reach FEATURED_SERVICES_COUNT
+      const displayServices = [
+        ...featuredServices,
+        ...remainingServices.slice(
+          0,
+          Math.max(0, FEATURED_SERVICES_COUNT - featuredServices.length)
+        ),
+      ].slice(0, FEATURED_SERVICES_COUNT);
+
+      return {
+        services: displayServices,
+        totalPages: 1,
+        showPagination: false,
+        isComplete: false,
+        remainingCount: services.length - displayServices.length,
+      };
+    }
+
+    // Show all services with pagination
+    const startIndex = (currentPage - 1) * SERVICES_PER_PAGE;
+    const endIndex = startIndex + SERVICES_PER_PAGE;
+    const paginatedServices = filteredServices.slice(startIndex, endIndex);
+
+    return {
+      services: paginatedServices,
+      totalPages: Math.ceil(filteredServices.length / SERVICES_PER_PAGE),
+      showPagination: filteredServices.length > SERVICES_PER_PAGE,
+      isComplete: true,
+    };
+  };
+
+  const displayData = getDisplayServices();
+
+  // Reset pagination when category changes
+  const handleCategoryChange = (category: string | null) => {
+    setSelectedCategory(category);
+    setCurrentPage(1);
+    if (category === null) {
+      setViewMode("featured");
+    }
+  };
+
+  const handleViewAllServices = () => {
+    setViewMode("all");
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top of services grid
+    const element = document.getElementById("services-grid");
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   // Animation variants
   const containerVariants = {
@@ -146,28 +247,26 @@ export function SiteWaveServicesGrid({
 
   return (
     <section
-      id="services"
-      className="py-20 lg:py-32 bg-gradient-to-b from-ocean-blue/10 to-soft-sand/30"
+      id="services-grid"
+      className="py-20 bg-gradient-to-b from-ocean-blue/10 to-soft-sand/30"
     >
       <div className="container" ref={ref}>
-        {/* Section Header */}
-        <div className="text-center mb-16">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold font-heading text-deep-navy mb-4">
-              Complete Digital Solutions
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Everything your Southwest Florida business needs to succeed online
-              – from websites to marketing to automation.
-            </p>
-          </motion.div>
-        </div>
+        <motion.div
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.6 }}
+        >
+          <h2 className="text-3xl md:text-4xl font-bold font-heading text-deep-navy mb-4">
+            Our Digital Solutions
+          </h2>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            From stunning websites to powerful automation, we provide complete
+            digital solutions for Southwest Florida businesses.
+          </p>
+        </motion.div>
 
-        {/* Category Filter */}
+        {/* Category Filters */}
         <motion.div
           className="flex flex-wrap justify-center gap-2 mb-12"
           initial={{ opacity: 0, y: 20 }}
@@ -181,9 +280,12 @@ export function SiteWaveServicesGrid({
                 ? "bg-ocean-blue text-white hover:bg-ocean-blue/90"
                 : "bg-background hover:bg-ocean-blue/10 text-muted-foreground hover:text-ocean-blue"
             }`}
-            onClick={() => setSelectedCategory(null)}
+            onClick={() => handleCategoryChange(null)}
           >
             All Services
+            {selectedCategory === null && viewMode === "featured" && (
+              <span className="ml-1 text-xs opacity-80">(Featured)</span>
+            )}
           </Badge>
           {categories.map((category) => (
             <Badge
@@ -194,12 +296,57 @@ export function SiteWaveServicesGrid({
                   ? "bg-ocean-blue text-white hover:bg-ocean-blue/90"
                   : "bg-background hover:bg-ocean-blue/10 text-muted-foreground hover:text-ocean-blue"
               }`}
-              onClick={() => setSelectedCategory(category)}
+              onClick={() => handleCategoryChange(category)}
             >
               {category}
             </Badge>
           ))}
         </motion.div>
+
+        {/* Services Count and View Toggle */}
+        {!selectedCategory && (
+          <motion.div
+            className="flex justify-between items-center mb-8"
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <div className="text-sm text-muted-foreground">
+              {viewMode === "featured" ? (
+                <span>
+                  Showing {displayData.services.length} featured services
+                  {displayData.remainingCount &&
+                    displayData.remainingCount > 0 && (
+                      <span>
+                        {" "}
+                        • {displayData.remainingCount} more available
+                      </span>
+                    )}
+                </span>
+              ) : (
+                <span>
+                  Showing {(currentPage - 1) * SERVICES_PER_PAGE + 1}-
+                  {Math.min(currentPage * SERVICES_PER_PAGE, services.length)}{" "}
+                  of {services.length} services
+                </span>
+              )}
+            </div>
+
+            {viewMode === "featured" &&
+              displayData.remainingCount &&
+              displayData.remainingCount > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleViewAllServices}
+                  className="gap-2 text-ocean-blue border-ocean-blue hover:bg-ocean-blue hover:text-white"
+                >
+                  <Grid3X3 className="w-4 h-4" />
+                  View All Services
+                </Button>
+              )}
+          </motion.div>
+        )}
 
         {/* Services Grid */}
         <motion.div
@@ -208,11 +355,12 @@ export function SiteWaveServicesGrid({
           initial="hidden"
           animate={inView ? "visible" : "hidden"}
         >
-          {filteredServices.map((service) => {
+          {displayData.services.map((service) => {
             const ServiceIcon = getServiceIcon(service.title, service.category);
             const isPopular =
               service.title.includes("Website") ||
-              service.title.includes("SEO");
+              service.title.includes("SEO") ||
+              FEATURED_SERVICES.includes(service.title);
 
             return (
               <motion.div key={service.id} variants={itemVariants}>
@@ -315,50 +463,157 @@ export function SiteWaveServicesGrid({
           })}
         </motion.div>
 
-        {/* No Services Message */}
-        {filteredServices.length === 0 && (
-          <motion.div
-            className="text-center py-12"
-            initial={{ opacity: 0, y: 20 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="bg-background/80 backdrop-blur-sm rounded-xl p-8 border border-ocean-blue/20">
-              <p className="text-muted-foreground">
-                No services found in this category.
-                <button
-                  onClick={() => setSelectedCategory(null)}
-                  className="ml-2 text-ocean-blue hover:underline"
+        {/* Load More Section for Featured View */}
+        {!selectedCategory &&
+          viewMode === "featured" &&
+          displayData.remainingCount &&
+          displayData.remainingCount > 0 && (
+            <motion.div
+              className="text-center mt-12"
+              initial={{ opacity: 0, y: 20 }}
+              animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <div className="max-w-md mx-auto">
+                <p className="text-muted-foreground mb-6">
+                  We have {displayData.remainingCount} more services to help
+                  grow your business.
+                </p>
+                <Button
+                  onClick={handleViewAllServices}
+                  size="lg"
+                  className="bg-ocean-blue hover:bg-ocean-blue/90 text-white px-8 py-3 gap-3"
                 >
-                  View all services
-                </button>
-              </p>
+                  View All {services.length} Services
+                  <ChevronDown className="w-5 h-5" />
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
+        {/* Pagination for All Services View and Category View */}
+        {displayData.showPagination && displayData.totalPages > 1 && (
+          <motion.div
+            className="mt-12 flex justify-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="gap-2"
+              >
+                Previous
+              </Button>
+
+              {/* Page Numbers */}
+              <div className="hidden sm:flex items-center gap-1">
+                {[...Array(displayData.totalPages)].map((_, i) => {
+                  const pageNum = i + 1;
+                  const isCurrentPage = pageNum === currentPage;
+
+                  // Show first, last, current, and adjacent pages
+                  const showPage =
+                    pageNum === 1 ||
+                    pageNum === displayData.totalPages ||
+                    Math.abs(pageNum - currentPage) <= 1;
+
+                  if (!showPage) {
+                    // Show ellipsis for gaps
+                    if (pageNum === 2 && currentPage > 4) {
+                      return (
+                        <span
+                          key={pageNum}
+                          className="px-2 text-muted-foreground"
+                        >
+                          ...
+                        </span>
+                      );
+                    }
+                    if (
+                      pageNum === displayData.totalPages - 1 &&
+                      currentPage < displayData.totalPages - 3
+                    ) {
+                      return (
+                        <span
+                          key={pageNum}
+                          className="px-2 text-muted-foreground"
+                        >
+                          ...
+                        </span>
+                      );
+                    }
+                    return null;
+                  }
+
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={isCurrentPage ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handlePageChange(pageNum)}
+                      className={
+                        isCurrentPage
+                          ? "bg-ocean-blue hover:bg-ocean-blue/90"
+                          : ""
+                      }
+                    >
+                      {pageNum}
+                    </Button>
+                  );
+                })}
+              </div>
+
+              {/* Mobile page indicator */}
+              <div className="sm:hidden px-4 py-2 text-sm text-muted-foreground">
+                {currentPage} of {displayData.totalPages}
+              </div>
+
+              <Button
+                variant="outline"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === displayData.totalPages}
+                className="gap-2"
+              >
+                Next
+              </Button>
             </div>
           </motion.div>
         )}
 
-        {/* Bottom CTA */}
-        <motion.div
-          className="text-center mt-16"
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          <p className="text-muted-foreground mb-6">
-            Don&apos;t see exactly what you need? Let&apos;s talk about your
-            specific requirements.
-          </p>
-          <Button
-            asChild
-            size="lg"
-            className="bg-coral-orange hover:bg-coral-orange/90 text-white px-8 py-6 text-lg font-semibold group"
+        {/* No Services Message */}
+        {displayData.services.length === 0 && (
+          <motion.div
+            className="text-center py-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.5 }}
           >
-            <Link href="/contact">
-              Get Custom Quote
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </Button>
-        </motion.div>
+            <div className="max-w-md mx-auto">
+              <h3 className="text-xl font-semibold text-deep-navy mb-2">
+                No services found
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                {selectedCategory
+                  ? `No services found in the ${selectedCategory} category.`
+                  : "No services are currently available."}
+              </p>
+              {selectedCategory && (
+                <Button
+                  variant="outline"
+                  onClick={() => handleCategoryChange(null)}
+                  className="gap-2"
+                >
+                  <List className="w-4 h-4" />
+                  View All Services
+                </Button>
+              )}
+            </div>
+          </motion.div>
+        )}
       </div>
     </section>
   );
