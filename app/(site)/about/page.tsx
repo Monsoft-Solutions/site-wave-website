@@ -2,16 +2,12 @@
 
 import { JsonLd } from "@/components/seo/JsonLd";
 
-// Import new About page sections
+// Import Site Wave About page sections
 import { AboutHeroSection } from "@/components/about/about-hero-section";
-import { AboutTimelineSection } from "@/components/about/about-timeline-section";
 import { AboutMissionSection } from "@/components/about/about-mission-section";
 import { AboutValuesSection } from "@/components/about/about-values-section";
-import { AboutTeamSection } from "@/components/about/about-team-section";
-import { AboutCultureSection } from "@/components/about/about-culture-section";
 import { AboutStatsSection } from "@/components/about/about-stats-section";
-import { AboutRecognitionSection } from "@/components/about/about-recognition-section";
-import { AboutFutureSection } from "@/components/about/about-future-section";
+import { AboutTeamSection } from "@/components/about/about-team-section";
 import { AboutCtaSection } from "@/components/about/about-cta-section";
 
 export default function AboutPage() {
@@ -20,60 +16,70 @@ export default function AboutPage() {
       <JsonLd
         type="Organization"
         data={{
-          name: "Monsoft Solutions",
+          name: "Site Wave",
           description:
-            "A forward-thinking software development company that creates innovative digital solutions for the modern world.",
-          url: "https://monsoft.com",
-          logo: "https://monsoft.com/logo.png",
-          foundingDate: "2014",
-          founders: [
-            {
-              "@type": "Person",
-              name: "Alex Johnson",
-            },
-          ],
-          numberOfEmployees: "25",
+            "Digital services for small businesses and entrepreneurs in Southwest Florida. Website development, SEO, digital marketing, and automation solutions.",
+          url: "https://sitewave.io",
+          logo: "https://sitewave.io/logo.png",
+          foundingDate: "2024",
+          numberOfEmployees: "10-25",
           location: {
             "@type": "Place",
-            name: "San Francisco, CA",
+            name: "Cape Coral, FL",
+            addressRegion: "FL",
+            addressCountry: "US",
+          },
+          areaServed: [
+            {
+              "@type": "Place",
+              name: "Cape Coral, FL",
+            },
+            {
+              "@type": "Place",
+              name: "Fort Myers, FL",
+            },
+            {
+              "@type": "Place",
+              name: "Naples, FL",
+            },
+            {
+              "@type": "Place",
+              name: "Southwest Florida",
+            },
+          ],
+          serviceArea: {
+            "@type": "GeoCircle",
+            geoMidpoint: {
+              "@type": "GeoCoordinates",
+              latitude: 26.5629,
+              longitude: -81.9495,
+            },
+            geoRadius: "50000",
           },
           sameAs: [
-            "https://linkedin.com/company/monsoft-solutions",
-            "https://twitter.com/monsoft",
-            "https://github.com/monsoft-solutions",
+            "https://facebook.com/sitewaveswfl",
+            "https://instagram.com/sitewaveswfl",
           ],
         }}
       />
 
       <main className="relative overflow-hidden">
-        {/* Dynamic Hero Section */}
+        {/* Hero Section */}
         <AboutHeroSection />
 
-        {/* Interactive Timeline */}
-        <AboutTimelineSection />
-
-        {/* Mission & Vision */}
+        {/* Mission & Services */}
         <AboutMissionSection />
 
-        {/* Core Values */}
+        {/* Our Values & Approach */}
         <AboutValuesSection />
 
-        {/* Team Showcase */}
-        <AboutTeamSection />
-
-        {/* Culture Gallery */}
-        <AboutCultureSection />
-
-        {/* Achievement Stats */}
+        {/* Success Stats */}
         <AboutStatsSection />
 
-        {/* Recognition Wall */}
-        <AboutRecognitionSection />
+        {/* Local Team */}
+        <AboutTeamSection />
 
-        {/* Future Vision */}
-        <AboutFutureSection />
-
-        {/* Join Us CTA */}
+        {/* Contact CTA */}
         <AboutCtaSection />
       </main>
     </>

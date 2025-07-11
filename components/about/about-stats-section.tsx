@@ -1,191 +1,100 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import CountUp from "react-countup";
 import {
-  Award,
+  Building2,
   Users,
   TrendingUp,
-  Calendar,
-  Trophy,
+  MapPin,
+  Award,
   Globe,
-  Sparkles,
   Star,
   Zap,
+  Clock,
 } from "lucide-react";
-import { useState } from "react";
-
-// Floating number particles
-const NumberParticle = ({
-  number,
-  delay,
-  index = 0,
-}: {
-  number: string;
-  delay: number;
-  index?: number;
-}) => {
-  // Deterministic positioning based on index
-  const xOffset = (index % 3) * 40 - 40; // -40, 0, 40
-  const yOffset = Math.floor(index / 3) * 30 - 30; // Vertical distribution
-
-  return (
-    <motion.div
-      className="absolute text-primary/20 font-bold text-xs select-none pointer-events-none"
-      initial={{
-        opacity: 0,
-        scale: 0,
-        x: xOffset,
-        y: yOffset,
-      }}
-      animate={{
-        opacity: [0, 0.7, 0],
-        scale: [0, 1, 0],
-        y: [yOffset, yOffset - 50],
-        rotate: [0, 360],
-      }}
-      transition={{
-        duration: 3,
-        delay: delay,
-        repeat: Infinity,
-        repeatDelay: 5,
-      }}
-    >
-      {number}
-    </motion.div>
-  );
-};
+import { Badge } from "@/components/ui/badge";
 
 // Interactive stat card component
 const StatCard = ({
   icon: Icon,
   value,
   label,
-  growth,
+  description,
   color,
+  bgColor,
   delay = 0,
-  particles = [],
 }: {
   icon: React.ComponentType<{ className?: string }>;
   value: number;
   label: string;
-  growth: string;
+  description: string;
   color: string;
+  bgColor: string;
   delay?: number;
-  particles?: string[];
 }) => {
   const [ref, inView] = useInView({
     threshold: 0.5,
     triggerOnce: true,
   });
 
-  const [isHovered, setIsHovered] = useState(false);
-
   return (
     <motion.div
       ref={ref}
       className="relative group"
-      initial={{ opacity: 0, y: 100, scale: 0.8 }}
+      initial={{ opacity: 0, y: 50, scale: 0.9 }}
       animate={
         inView
           ? { opacity: 1, y: 0, scale: 1 }
-          : { opacity: 0, y: 100, scale: 0.8 }
+          : { opacity: 0, y: 50, scale: 0.9 }
       }
       transition={{
-        duration: 0.8,
+        duration: 0.6,
         delay: delay,
         type: "spring",
         stiffness: 100,
         damping: 15,
       }}
       whileHover={{
-        scale: 1.05,
-        y: -10,
-        rotateY: 5,
+        scale: 1.02,
+        y: -5,
         transition: { duration: 0.3 },
       }}
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
     >
       {/* Background glow effect */}
-      <motion.div
-        className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${color} opacity-0 blur-xl group-hover:opacity-20 transition-opacity duration-500`}
-        animate={isHovered ? { scale: 1.2 } : { scale: 1 }}
+      <div
+        className={`absolute inset-0 rounded-2xl ${bgColor} opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm`}
       />
 
-      {/* Floating particles */}
-      <div className="absolute inset-0 overflow-hidden rounded-2xl">
-        {particles.map((particle, index) => (
-          <NumberParticle
-            key={index}
-            number={particle}
-            delay={delay + index * 0.5}
-            index={index}
-          />
-        ))}
-      </div>
-
       {/* Card content */}
-      <div className="relative p-8 bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl hover:border-primary/30 transition-all duration-500 group-hover:bg-card/90">
-        {/* Icon with animation */}
-        <motion.div
-          className="flex justify-center mb-6"
-          animate={isHovered ? { rotate: [0, -10, 10, 0] } : {}}
-          transition={{ duration: 0.5 }}
-        >
+      <div className="relative p-8 bg-white border border-gray-200 rounded-2xl hover:border-blue-500/30 transition-all duration-500 group-hover:bg-white shadow-sm hover:shadow-lg">
+        {/* Icon */}
+        <div className="flex justify-center mb-6">
           <div
-            className={`p-4 rounded-full bg-gradient-to-br ${color} shadow-lg group-hover:shadow-xl transition-shadow duration-300`}
+            className={`p-4 rounded-full ${bgColor} group-hover:scale-110 transition-transform duration-300`}
           >
-            <motion.div
-              animate={isHovered ? { scale: 1.2 } : { scale: 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Icon className="w-8 h-8 text-white" />
-            </motion.div>
+            <Icon className={`w-8 h-8 ${color}`} />
           </div>
-        </motion.div>
+        </div>
 
         {/* Animated counter */}
         <div className="text-center">
-          <motion.div
-            className="text-4xl md:text-5xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors duration-300"
-            initial={{ scale: 0 }}
-            animate={inView ? { scale: 1 } : { scale: 0 }}
-            transition={{ duration: 0.5, delay: delay + 0.3 }}
-          >
+          <div className="text-4xl md:text-5xl font-bold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors duration-300">
             {inView && (
               <CountUp
                 end={value}
-                duration={2.5}
+                duration={2}
                 delay={delay}
                 preserveValue
-                suffix={value >= 1000 ? "+" : ""}
+                suffix={value >= 100 ? "+" : ""}
               />
             )}
-          </motion.div>
+          </div>
 
-          <motion.p
-            className="text-muted-foreground font-medium mb-3"
-            initial={{ opacity: 0 }}
-            animate={inView ? { opacity: 1 } : { opacity: 0 }}
-            transition={{ duration: 0.5, delay: delay + 0.5 }}
-          >
-            {label}
-          </motion.p>
+          <p className="text-lg font-semibold text-gray-700 mb-2">{label}</p>
 
-          {/* Growth indicator */}
-          <motion.div
-            className="flex items-center justify-center gap-1"
-            initial={{ opacity: 0, y: 20 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.5, delay: delay + 0.7 }}
-          >
-            <TrendingUp className="w-4 h-4 text-green-500" />
-            <span className="text-sm text-green-500 font-semibold">
-              {growth}
-            </span>
-          </motion.div>
+          <p className="text-sm text-gray-500">{description}</p>
         </div>
       </div>
     </motion.div>
@@ -194,276 +103,223 @@ const StatCard = ({
 
 export function AboutStatsSection() {
   const [ref, inView] = useInView({
-    threshold: 0.2,
+    threshold: 0.1,
     triggerOnce: true,
   });
 
-  const { scrollYProgress } = useScroll();
-  const backgroundY = useTransform(scrollYProgress, [0, 1], [0, -50]);
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+        delayChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring" as const,
+        stiffness: 100,
+        damping: 15,
+      },
+    },
+  };
 
   const stats = [
     {
-      icon: Calendar,
-      value: 10,
-      label: "Years of Excellence",
-      growth: "+100% Growth",
-      color: "from-purple-500 to-purple-600",
-      particles: ["2014", "2024", "10Y"],
+      icon: Building2,
+      value: 150,
+      label: "SWFL Businesses Served",
+      description: "From Cape Coral to Naples",
+      color: "text-blue-600",
+      bgColor: "bg-blue-500/10",
     },
     {
-      icon: Users,
-      value: 500,
-      label: "Projects Delivered",
-      growth: "+250% This Year",
-      color: "from-blue-500 to-blue-600",
-      particles: ["500", "✓", "🚀"],
+      icon: TrendingUp,
+      value: 85,
+      label: "Average ROI Increase",
+      description: "Within 6 months",
+      color: "text-orange-600",
+      bgColor: "bg-orange-500/10",
     },
     {
       icon: Award,
-      value: 200,
-      label: "Happy Clients",
-      growth: "+180% Retention",
-      color: "from-green-500 to-green-600",
-      particles: ["200", "😊", "⭐"],
+      value: 98,
+      label: "Client Satisfaction Rate",
+      description: "Based on project reviews",
+      color: "text-blue-600",
+      bgColor: "bg-blue-500/10",
     },
     {
-      icon: Globe,
-      value: 25,
-      label: "Countries Served",
-      growth: "+15 New Markets",
-      color: "from-orange-500 to-orange-600",
-      particles: ["25", "🌍", "📈"],
-    },
-    {
-      icon: Trophy,
-      value: 15,
-      label: "Industry Awards",
-      growth: "+5 This Year",
-      color: "from-yellow-500 to-yellow-600",
-      particles: ["15", "🏆", "🎉"],
-    },
-    {
-      icon: Star,
-      value: 99,
-      label: "Client Satisfaction",
-      growth: "+2% YoY",
-      color: "from-pink-500 to-pink-600",
-      particles: ["99%", "⭐", "💯"],
+      icon: Clock,
+      value: 24,
+      label: "Average Project Days",
+      description: "From start to launch",
+      color: "text-orange-600",
+      bgColor: "bg-orange-500/10",
     },
   ];
 
-  const milestones = [
+  const achievements = [
     {
-      year: "2014",
-      achievement: "Company Founded",
-      color: "from-blue-500 to-purple-500",
+      icon: Star,
+      title: "5-Star Reviews",
+      description: "Consistent quality across all projects",
     },
     {
-      year: "2020",
-      achievement: "100+ Projects",
-      color: "from-purple-500 to-pink-500",
+      icon: MapPin,
+      title: "Local Expertise",
+      description: "Deep understanding of SWFL markets",
     },
     {
-      year: "2024",
-      achievement: "Global Recognition",
-      color: "from-pink-500 to-orange-500",
+      icon: Zap,
+      title: "AI-Powered",
+      description: "Cutting-edge tech at local prices",
+    },
+    {
+      icon: Users,
+      title: "Personal Service",
+      description: "Direct access to our team",
     },
   ];
 
   return (
-    <section
-      className="relative py-24 overflow-hidden bg-gradient-to-br from-background via-accent/5 to-background"
-      ref={ref}
-    >
-      {/* Animated background elements */}
-      <motion.div className="absolute inset-0" style={{ y: backgroundY }}>
-        {/* Grid pattern */}
-        <div className="absolute inset-0 bg-grid-slate-100 [mask-image:radial-gradient(ellipse_at_center,white,transparent)] dark:bg-grid-slate-700/25 opacity-30" />
+    <section className="py-24 relative overflow-hidden bg-gradient-to-b from-white to-blue-50/30">
+      {/* Background Elements */}
+      <div className="absolute inset-0">
+        <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 left-1/4 w-48 h-48 bg-orange-500/5 rounded-full blur-3xl" />
+      </div>
 
-        {/* Floating orbs */}
+      <div className="container relative" ref={ref}>
         <motion.div
-          className="absolute top-20 left-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
-            x: [0, 50, 0],
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-20 right-10 w-48 h-48 bg-accent/5 rounded-full blur-2xl"
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.2, 0.4, 0.2],
-            x: [0, -30, 0],
-          }}
-          transition={{
-            duration: 6,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 2,
-          }}
-        />
-      </motion.div>
-
-      <div className="container relative z-10">
-        {/* Section header */}
-        <motion.div
-          className="text-center mb-20"
-          initial={{ opacity: 0, y: 50 }}
-          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-          transition={{ duration: 0.8 }}
+          className="mx-auto max-w-7xl"
+          initial="hidden"
+          animate={inView ? "visible" : "hidden"}
+          variants={containerVariants}
         >
-          <motion.div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6"
-            whileHover={{ scale: 1.05 }}
-          >
-            <Sparkles className="w-4 h-4" />
-            Numbers That Tell Our Story
+          {/* Section Header */}
+          <motion.div variants={itemVariants} className="text-center mb-16">
+            <Badge
+              variant="outline"
+              className="mb-4 border-blue-500/30 text-blue-700"
+            >
+              <Award className="w-4 h-4 mr-2" />
+              Our Impact
+            </Badge>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              <span className="text-gray-800">Real Results for</span>{" "}
+              <span className="bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">
+                Real Businesses
+              </span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Numbers don&apos;t lie. Here&apos;s how we&apos;ve helped
+              Southwest Florida businesses grow, thrive, and compete in the
+              digital marketplace.
+            </p>
           </motion.div>
 
-          <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
-            <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              Measurable
-            </span>
-            <br />
-            <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-              Impact & Growth
-            </span>
-          </h2>
-
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Our journey is marked by consistent growth, satisfied clients, and
-            groundbreaking achievements that speak to our commitment to
-            excellence.
-          </p>
-        </motion.div>
-
-        {/* Stats grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
-          {stats.map((stat, index) => (
-            <StatCard key={index} {...stat} delay={index * 0.2} />
-          ))}
-        </div>
-
-        {/* Growth timeline */}
-        <motion.div
-          className="relative"
-          initial={{ opacity: 0, y: 50 }}
-          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-          transition={{ duration: 0.8, delay: 1 }}
-        >
-          <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold text-foreground mb-4">
-              Our Growth Story
-            </h3>
-            <p className="text-muted-foreground">
-              Key milestones in our journey
-            </p>
-          </div>
-
-          <div className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-16">
-            {milestones.map((milestone, index) => (
-              <motion.div
-                key={index}
-                className="relative text-center group"
-                initial={{ opacity: 0, scale: 0 }}
-                animate={
-                  inView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0 }
-                }
-                transition={{
-                  duration: 0.6,
-                  delay: 1.2 + index * 0.3,
-                  type: "spring",
-                  stiffness: 100,
-                }}
-                whileHover={{ scale: 1.1, y: -5 }}
-              >
-                {/* Connection line */}
-                {index < milestones.length - 1 && (
-                  <motion.div
-                    className="hidden md:block absolute top-1/2 left-full w-16 h-0.5 bg-gradient-to-r from-primary/50 to-accent/50"
-                    initial={{ scaleX: 0 }}
-                    animate={inView ? { scaleX: 1 } : { scaleX: 0 }}
-                    transition={{ duration: 0.8, delay: 1.5 + index * 0.3 }}
-                  />
-                )}
-
-                {/* Milestone card */}
-                <motion.div
-                  className={`p-6 rounded-2xl bg-gradient-to-br ${milestone.color} text-white shadow-lg group-hover:shadow-xl transition-shadow duration-300`}
-                  whileHover={{ rotateY: 5 }}
-                >
-                  <motion.div
-                    className="text-2xl font-bold mb-2"
-                    animate={{ scale: [1, 1.1, 1] }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      delay: index * 0.5,
-                    }}
-                  >
-                    {milestone.year}
-                  </motion.div>
-                  <div className="text-sm opacity-90">
-                    {milestone.achievement}
-                  </div>
-
-                  {/* Sparkle effect */}
-                  <motion.div
-                    className="absolute -top-2 -right-2"
-                    animate={{ rotate: 360 }}
-                    transition={{
-                      duration: 3,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                  >
-                    <Zap className="w-5 h-5 text-yellow-300" />
-                  </motion.div>
-                </motion.div>
-              </motion.div>
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
+            {stats.map((stat, index) => (
+              <StatCard
+                key={stat.label}
+                icon={stat.icon}
+                value={stat.value}
+                label={stat.label}
+                description={stat.description}
+                color={stat.color}
+                bgColor={stat.bgColor}
+                delay={index * 0.1}
+              />
             ))}
           </div>
-        </motion.div>
 
-        {/* Additional metrics */}
-        <motion.div
-          className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-20 pt-12 border-t border-border/50"
-          initial={{ opacity: 0, y: 30 }}
-          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-          transition={{ duration: 0.8, delay: 1.8 }}
-        >
-          {[
-            { label: "Coffee Consumed", value: "5000", unit: "Cups" },
-            { label: "Lines of Code", value: "2M", unit: "+" },
-            { label: "Team Growth", value: "300", unit: "%" },
-            { label: "Client Success", value: "99.8", unit: "%" },
-          ].map((metric, index) => (
-            <motion.div
-              key={index}
-              className="text-center group"
-              whileHover={{ scale: 1.05 }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.5, delay: 2 + index * 0.1 }}
-            >
-              <div className="text-2xl md:text-3xl font-bold text-primary mb-1 group-hover:text-accent transition-colors duration-300">
-                {inView && (
-                  <CountUp
-                    end={parseFloat(metric.value)}
-                    duration={2}
-                    delay={2 + index * 0.1}
-                    preserveValue
-                    suffix={metric.unit}
-                  />
-                )}
+          {/* Why These Numbers Matter */}
+          <motion.div variants={itemVariants} className="mb-16">
+            <div className="bg-gradient-to-r from-blue-600 to-orange-500 rounded-3xl p-8 lg:p-12 text-white">
+              <div className="text-center mb-12">
+                <h3 className="text-2xl md:text-3xl font-bold mb-4">
+                  Why These Numbers Matter
+                </h3>
+                <p className="text-lg opacity-90 max-w-3xl mx-auto">
+                  Behind every statistic is a Southwest Florida business
+                  that&apos;s reaching more customers, growing revenue, and
+                  building their digital presence.
+                </p>
               </div>
-              <div className="text-sm text-muted-foreground">
-                {metric.label}
+
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {achievements.map((achievement) => {
+                  const IconComponent = achievement.icon;
+                  return (
+                    <div key={achievement.title} className="text-center">
+                      <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                        <IconComponent className="w-6 h-6 text-white" />
+                      </div>
+                      <h4 className="font-semibold mb-2">
+                        {achievement.title}
+                      </h4>
+                      <p className="text-sm opacity-80">
+                        {achievement.description}
+                      </p>
+                    </div>
+                  );
+                })}
               </div>
-            </motion.div>
-          ))}
+            </div>
+          </motion.div>
+
+          {/* Client Success Stories Teaser */}
+          <motion.div variants={itemVariants} className="text-center">
+            <div className="bg-white border border-gray-200 rounded-2xl p-8 lg:p-12 shadow-sm">
+              <div className="max-w-4xl mx-auto">
+                <Globe className="w-12 h-12 text-blue-600 mx-auto mb-6" />
+                <h3 className="text-2xl font-bold mb-4 text-gray-800">
+                  From Local Startups to Established Companies
+                </h3>
+                <p className="text-lg text-gray-600 mb-8">
+                  We&apos;ve helped restaurants increase reservations, retail
+                  stores boost online sales, service companies generate more
+                  leads, and nonprofits expand their reach—all right here in
+                  Southwest Florida.
+                </p>
+                <div className="grid md:grid-cols-3 gap-6 text-center">
+                  <div>
+                    <div className="text-3xl font-bold text-blue-600 mb-2">
+                      Restaurant
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      300% more online orders
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-3xl font-bold text-orange-600 mb-2">
+                      Retail Store
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      200% increase in foot traffic
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-3xl font-bold text-blue-600 mb-2">
+                      Service Company
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      400% more qualified leads
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </motion.div>
       </div>
     </section>
