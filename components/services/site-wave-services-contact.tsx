@@ -27,7 +27,7 @@ const contactMethods = [
   {
     icon: Mail,
     title: "Get Started Online",
-    description: "Visit sitewave.io and tell us about your project",
+    description: "Visit sitewavefl.com and tell us about your project",
     action: "Send Message",
     href: "/contact",
     color: "coral-orange",

@@ -21,9 +21,9 @@ export const siteConfig = {
   },
   creator: {
     name: "Site Wave by Monsoft Solutions",
-    email: "hello@sitewave.io",
+    email: "hello@sitewavefl.com",
     twitter: "@sitewavefl",
-    url: "https://sitewave.io",
+    url: "https://sitewavefl.com",
   },
   keywords: [
     "website development southwest florida",
@@ -56,7 +56,7 @@ export const siteConfig = {
     applicationName: "Site Wave - Digital Services for Southwest Florida",
     referrer: "origin-when-cross-origin",
     authors: [
-      { name: "Site Wave by Monsoft Solutions", url: "https://sitewave.io" },
+      { name: "Site Wave by Monsoft Solutions", url: "https://sitewavefl.com" },
     ],
     colorScheme: "light dark",
     themeColor: [

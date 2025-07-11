@@ -19,8 +19,8 @@ export default function AboutPage() {
           name: "Site Wave",
           description:
             "Digital services for small businesses and entrepreneurs in Southwest Florida. Website development, SEO, digital marketing, and automation solutions.",
-          url: "https://sitewave.io",
-          logo: "https://sitewave.io/logo.png",
+          url: "https://sitewavefl.com",
+          logo: "https://sitewavefl.com/logo.png",
           foundingDate: "2024",
           numberOfEmployees: "10-25",
           location: {

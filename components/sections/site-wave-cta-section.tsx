@@ -88,7 +88,7 @@ export function SiteWaveCtaSection() {
                 Get Started Online
               </h3>
               <p className="text-muted-foreground">
-                Visit sitewave.io and tell us about your project
+                Visit sitewavefl.com and tell us about your project
               </p>
             </motion.div>
 

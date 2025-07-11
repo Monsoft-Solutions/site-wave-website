@@ -1,5 +1,4 @@
 import { MetadataRoute } from "next";
-import { siteConfig } from "@/lib/config/site";
 import {
   getBlogPosts,
   getBlogCategories,
@@ -8,6 +7,7 @@ import {
 import { getAllServices } from "@/lib/api/services.api";
 import fs from "fs";
 import path from "path";
+import { env } from "@/lib/env";
 
 // Configuration for page discovery
 const pageConfig = {
@@ -100,7 +100,9 @@ function generateStaticPages(): MetadataRoute.Sitemap {
   return discoveredPaths.map((pagePath) => {
     // Convert empty string (root) to base URL
     const url =
-      pagePath === "" ? siteConfig.url : `${siteConfig.url}/${pagePath}`;
+      pagePath === ""
+        ? env.NEXT_PUBLIC_SITE_URL
+        : `${env.NEXT_PUBLIC_SITE_URL}/${pagePath}`;
 
     // Find matching priority rule
     let priority = 0.7;
@@ -159,7 +161,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Generate blog post URLs
     const blogPostPages: MetadataRoute.Sitemap = blogResult.posts.map(
       (post) => ({
-        url: `${siteConfig.url}/blog/${post.slug}`,
+        url: `${env.NEXT_PUBLIC_SITE_URL}/blog/${post.slug}`,
         lastModified: post.updatedAt,
         changeFrequency: "weekly" as const,
         priority: 0.6,
@@ -171,7 +173,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const categoryPages: MetadataRoute.Sitemap = categories
       .filter((cat) => cat.category.slug !== "all") // Skip the "all" category
       .map((cat) => ({
-        url: `${siteConfig.url}/blog/category/${cat.category.slug}`,
+        url: `${env.NEXT_PUBLIC_SITE_URL}/blog/category/${cat.category.slug}`,
         lastModified: cat.category.updatedAt,
         changeFrequency: "weekly" as const,
         priority: 0.5,
@@ -180,7 +182,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Fetch all tags
     const tags = await getBlogTags();
     const tagPages: MetadataRoute.Sitemap = tags.map((tag) => ({
-      url: `${siteConfig.url}/blog/tag/${tag.tag.slug}`,
+      url: `${env.NEXT_PUBLIC_SITE_URL}/blog/tag/${tag.tag.slug}`,
       lastModified: tag.tag.createdAt,
       changeFrequency: "weekly" as const,
       priority: 0.4,
@@ -190,7 +192,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const servicesResult = await getAllServices();
     const servicePages: MetadataRoute.Sitemap = servicesResult.success
       ? servicesResult.data.map((service) => ({
-          url: `${siteConfig.url}/services/${service.slug}`,
+          url: `${env.NEXT_PUBLIC_SITE_URL}/services/${service.slug}`,
           lastModified: service.updatedAt,
           changeFrequency: "monthly" as const,
           priority: 0.7,

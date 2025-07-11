@@ -324,7 +324,7 @@ export function SiteWaveHeroSection() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="w-4 h-4 text-coral-orange" />
-                  <span className="text-sm">Get started at sitewave.io</span>
+                  <span className="text-sm">Get started at sitewavefl.com</span>
                 </div>
               </motion.div>
             </motion.div>

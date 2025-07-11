@@ -339,8 +339,8 @@ export function AboutCtaSection() {
                         className="border-orange-600 text-orange-600 hover:bg-orange-50 text-sm md:text-base"
                         asChild
                       >
-                        <Link href="mailto:hello@sitewave.io">
-                          hello@sitewave.io
+                        <Link href="mailto:hello@sitewavefl.com">
+                          hello@sitewavefl.com
                         </Link>
                       </Button>
                     </div>
