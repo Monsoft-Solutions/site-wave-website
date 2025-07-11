@@ -1,24 +1,25 @@
 import { Metadata } from "next";
 import { generateSeoMetadata } from "@/lib/config/seo";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { HeroContactSection } from "@/components/sections/contact/hero-contact-section";
+import { SiteWaveHeroContactSection } from "@/components/sections/contact/site-wave-hero-contact-section";
 import { EnhancedContactForm } from "@/components/sections/contact/enhanced-contact-form";
-import { TeamContactSection } from "@/components/sections/contact/team-contact-section";
-import { EnhancedFaqSection } from "@/components/sections/contact/enhanced-faq-section";
+import { SiteWaveContactFaq } from "@/components/sections/contact/site-wave-contact-faq";
 
 export const metadata: Metadata = generateSeoMetadata({
-  title: "Contact Us - Let's Create Something Amazing Together",
+  title: "Contact Site Wave - Free Consultation for Your SWFL Business",
   description:
-    "Connect with our expert team to bring your vision to life. Multiple ways to reach us, dedicated specialists for every project type, and instant answers to your questions.",
+    "Get a free consultation from Site Wave's Southwest Florida digital experts. We help businesses in Cape Coral, Fort Myers, and Naples grow with custom websites, SEO, and digital marketing.",
   keywords: [
-    "contact",
-    "support",
-    "consultation",
-    "project inquiry",
-    "team",
-    "expert developers",
-    "design consultation",
-    "project planning",
+    "contact site wave",
+    "free consultation southwest florida",
+    "web design cape coral",
+    "seo fort myers",
+    "digital marketing naples",
+    "website development swfl",
+    "local business marketing",
+    "cape coral web designers",
+    "fort myers seo company",
+    "naples digital marketing",
   ],
 });
 
@@ -28,51 +29,82 @@ export default function ContactPage() {
       <JsonLd
         type="Organization"
         data={{
-          name: "Monsoft Solutions",
+          name: "Site Wave",
           description:
-            "A software development company that provides innovative digital solutions with expert team members specializing in web development, mobile apps, UI/UX design, and technical consulting.",
-          url: "https://monsoft.com",
-          telephone: "+1-555-123-4567",
-          email: "hello@monsoft.com",
+            "Site Wave by Monsoft Solutions provides website development, SEO, digital marketing, and business automation services for small businesses in Southwest Florida.",
+          url: "https://sitewave.io",
+          telephone: "+1-239-555-0123",
+          email: "hello@sitewave.io",
           contactPoint: [
             {
               "@type": "ContactPoint",
-              telephone: "+1-555-123-4567",
+              telephone: "+1-239-555-0123",
               contactType: "customer service",
-              availableLanguage: ["English", "Spanish"],
-              areaServed: "US",
+              availableLanguage: ["English"],
+              areaServed: [
+                "Cape Coral, FL",
+                "Fort Myers, FL",
+                "Naples, FL",
+                "Southwest Florida",
+              ],
             },
             {
               "@type": "ContactPoint",
-              email: "hello@monsoft.com",
+              email: "hello@sitewave.io",
               contactType: "sales",
-              availableLanguage: ["English", "Spanish"],
-              areaServed: "Global",
+              availableLanguage: ["English"],
+              areaServed: "Southwest Florida",
             },
           ],
           address: {
             "@type": "PostalAddress",
-            streetAddress: "123 Tech Street",
-            addressLocality: "San Francisco",
-            addressRegion: "CA",
-            postalCode: "94102",
+            addressLocality: "Cape Coral",
+            addressRegion: "FL",
             addressCountry: "US",
+          },
+          areaServed: [
+            {
+              "@type": "Place",
+              name: "Cape Coral, FL",
+            },
+            {
+              "@type": "Place",
+              name: "Fort Myers, FL",
+            },
+            {
+              "@type": "Place",
+              name: "Naples, FL",
+            },
+            {
+              "@type": "Place",
+              name: "Southwest Florida",
+            },
+          ],
+          serviceArea: {
+            "@type": "GeoCircle",
+            geoMidpoint: {
+              "@type": "GeoCoordinates",
+              latitude: 26.5629,
+              longitude: -81.9495,
+            },
+            geoRadius: "50000",
+          },
+          parentOrganization: {
+            "@type": "Organization",
+            name: "Monsoft Solutions",
           },
         }}
       />
 
       <div className="min-h-screen">
-        {/* Hero Section with Quick Actions */}
-        <HeroContactSection />
+        {/* Hero Section with Site Wave Branding and Free Consultation Focus */}
+        <SiteWaveHeroContactSection />
 
-        {/* Enhanced Multi-Step Contact Form */}
+        {/* Enhanced Contact Form - Service-focused with Free Consultation */}
         <EnhancedContactForm />
 
-        {/* Team Contact Directory */}
-        <TeamContactSection />
-
-        {/* Enhanced FAQ Section */}
-        <EnhancedFaqSection />
+        {/* Site Wave FAQ Section - SWFL Business Focused */}
+        <SiteWaveContactFaq />
       </div>
     </>
   );

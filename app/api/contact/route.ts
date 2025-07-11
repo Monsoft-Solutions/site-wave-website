@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
       ? (validationResult.data as EnhancedContactFormData)
       : null;
     const company = enhancedData?.company || null;
-    const projectType = enhancedData?.projectType || null;
+    const projectType = enhancedData?.serviceId || null; // Store service ID in projectType field
     const budget = enhancedData?.budget || null;
     const timeline = enhancedData?.timeline || null;
 

@@ -16,6 +16,8 @@ import {
 } from "@/lib/utils/contact-form-validation";
 import { ContactFormResponse } from "@/lib/types/contact-submission.type";
 import { analytics } from "@/lib/utils/analytics";
+import { useServices } from "@/lib/hooks/use-services.hook";
+import { ServiceWithRelations } from "@/lib/types/service-with-relations.type";
 import {
   Send,
   User,
@@ -61,14 +63,6 @@ const SUCCESS_MESSAGES = {
 } as const;
 
 // Type definitions
-type ProjectTypeId =
-  | "web-development"
-  | "mobile-app"
-  | "ui-ux-design"
-  | "consulting"
-  | "maintenance"
-  | "other";
-
 type BudgetId =
   | "under-10k"
   | "10k-25k"
@@ -84,14 +78,6 @@ type TimelineId =
   | "6-12-months"
   | "flexible";
 
-interface ProjectType {
-  id: ProjectTypeId;
-  title: string;
-  description: string;
-  icon: string;
-  badge: string;
-}
-
 interface BudgetRange {
   id: BudgetId;
   label: string;
@@ -104,51 +90,14 @@ interface TimelineOption {
   icon: string;
 }
 
-// Project type options
-const projectTypes: ProjectType[] = [
-  {
-    id: "web-development",
-    title: "Web Development",
-    description: "Custom websites and web applications",
-    icon: "🌐",
-    badge: "Popular",
-  },
-  {
-    id: "mobile-app",
-    title: "Mobile App",
-    description: "iOS and Android applications",
-    icon: "📱",
-    badge: "",
-  },
-  {
-    id: "ui-ux-design",
-    title: "UI/UX Design",
-    description: "User interface and experience design",
-    icon: "🎨",
-    badge: "",
-  },
-  {
-    id: "consulting",
-    title: "Technical Consulting",
-    description: "Strategy and technical guidance",
-    icon: "💡",
-    badge: "",
-  },
-  {
-    id: "maintenance",
-    title: "Maintenance & Support",
-    description: "Ongoing support for existing projects",
-    icon: "🛠️",
-    badge: "",
-  },
-  {
-    id: "other",
-    title: "Other",
-    description: "Tell us about your unique project",
-    icon: "✨",
-    badge: "",
-  },
-];
+// Service category icons mapping for UI
+const categoryIcons: Record<string, string> = {
+  Development: "🌐",
+  Design: "🎨",
+  Consulting: "💡",
+  Marketing: "📈",
+  Support: "🛠️",
+};
 
 // Budget ranges
 const budgetRanges: BudgetRange[] = [
@@ -176,11 +125,16 @@ export function EnhancedContactForm(): React.JSX.Element {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [hasStartedForm, setHasStartedForm] = useState<boolean>(false);
-  const [selectedProjectType, setSelectedProjectType] = useState<
-    ProjectTypeId | ""
-  >("");
+  const [selectedServiceId, setSelectedServiceId] = useState<string>("");
   const [selectedBudget, setSelectedBudget] = useState<BudgetId | "">("");
   const [selectedTimeline, setSelectedTimeline] = useState<TimelineId | "">("");
+
+  // Fetch services from database
+  const {
+    data: services,
+    isLoading: servicesLoading,
+    error: servicesError,
+  } = useServices();
 
   const form = useForm<EnhancedContactFormData>({
     resolver: zodResolver(enhancedContactFormSchema),
@@ -233,7 +187,7 @@ export function EnhancedContactForm(): React.JSX.Element {
     try {
       const submissionData = {
         ...data,
-        projectType: selectedProjectType,
+        serviceId: selectedServiceId,
         budget: selectedBudget,
         timeline: selectedTimeline,
       };
@@ -283,7 +237,7 @@ export function EnhancedContactForm(): React.JSX.Element {
       // Reset form state
       form.reset();
       setCurrentStep(1);
-      setSelectedProjectType("");
+      setSelectedServiceId("");
       setSelectedBudget("");
       setSelectedTimeline("");
     } catch (error) {
@@ -314,7 +268,7 @@ export function EnhancedContactForm(): React.JSX.Element {
   const isStepValid = (step: number): boolean => {
     switch (step) {
       case 1:
-        return selectedProjectType !== "";
+        return selectedServiceId !== "";
       case 2:
         return selectedBudget !== "" && selectedTimeline !== "";
       case 3:
@@ -414,39 +368,51 @@ export function EnhancedContactForm(): React.JSX.Element {
                           </p>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {projectTypes.map((type) => (
-                            <motion.div
-                              key={type.id}
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              className={`relative p-4 border-2 rounded-2xl cursor-pointer transition-all ${
-                                selectedProjectType === type.id
-                                  ? "border-primary bg-primary/5"
-                                  : "border-border hover:border-primary/50"
-                              }`}
-                              onClick={() => setSelectedProjectType(type.id)}
-                            >
-                              {type.badge && (
-                                <Badge className="absolute -top-2 right-4 text-xs">
-                                  {type.badge}
-                                </Badge>
-                              )}
-                              <div className="flex items-start space-x-3">
-                                <span className="text-2xl">{type.icon}</span>
-                                <div>
-                                  <h4 className="font-medium">{type.title}</h4>
-                                  <p className="text-sm text-muted-foreground">
-                                    {type.description}
-                                  </p>
+                        {servicesLoading ? (
+                          <div className="flex justify-center items-center py-8">
+                            <LoadingSpinner className="mr-2" />
+                            <span>Loading services...</span>
+                          </div>
+                        ) : servicesError ? (
+                          <div className="text-center py-8 text-red-500">
+                            <p>
+                              Failed to load services. Please try again later.
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {services.map((service: ServiceWithRelations) => (
+                              <motion.div
+                                key={service.id}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className={`relative p-4 border-2 rounded-2xl cursor-pointer transition-all ${
+                                  selectedServiceId === service.id
+                                    ? "border-primary bg-primary/5"
+                                    : "border-border hover:border-primary/50"
+                                }`}
+                                onClick={() => setSelectedServiceId(service.id)}
+                              >
+                                <div className="flex items-start space-x-3">
+                                  <span className="text-2xl">
+                                    {categoryIcons[service.category] || "🔧"}
+                                  </span>
+                                  <div>
+                                    <h4 className="font-medium">
+                                      {service.title}
+                                    </h4>
+                                    <p className="text-sm text-muted-foreground">
+                                      {service.shortDescription}
+                                    </p>
+                                  </div>
                                 </div>
-                              </div>
-                              {selectedProjectType === type.id && (
-                                <CheckCircle className="absolute top-4 right-4 w-5 h-5 text-primary" />
-                              )}
-                            </motion.div>
-                          ))}
-                        </div>
+                                {selectedServiceId === service.id && (
+                                  <CheckCircle className="absolute top-4 right-4 w-5 h-5 text-primary" />
+                                )}
+                              </motion.div>
+                            ))}
+                          </div>
+                        )}
                       </motion.div>
                     )}
 
@@ -647,10 +613,9 @@ export function EnhancedContactForm(): React.JSX.Element {
                           </h4>
                           <div className="space-y-1 text-sm text-muted-foreground">
                             <p>
-                              <strong>Type:</strong>{" "}
-                              {projectTypes.find(
-                                (p) => p.id === selectedProjectType
-                              )?.title || "Not selected"}
+                              <strong>Service:</strong>{" "}
+                              {services.find((s) => s.id === selectedServiceId)
+                                ?.title || "Not selected"}
                             </p>
                             <p>
                               <strong>Budget:</strong>{" "}

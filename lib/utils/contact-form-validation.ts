@@ -31,16 +31,10 @@ export const phoneSchema = z
 
 export const urlSchema = z.string().url(validationMessages.url).optional();
 
-// Project type validation
-export const projectTypeSchema = z
-  .enum([
-    "web-development",
-    "mobile-app",
-    "ui-ux-design",
-    "consulting",
-    "maintenance",
-    "other",
-  ])
+// Service ID validation (replaces project type validation)
+export const serviceIdSchema = z
+  .string()
+  .uuid("Please select a valid service")
   .optional();
 
 // Budget range validation
@@ -71,7 +65,7 @@ export const enhancedContactFormSchema = contactFormSchema.extend({
     .string()
     .max(255, validationMessages.max("Company", 255))
     .optional(),
-  projectType: projectTypeSchema,
+  serviceId: serviceIdSchema,
   budget: budgetRangeSchema,
   timeline: timelineSchema,
 });
