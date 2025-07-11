@@ -34,9 +34,13 @@ interface PricingTier {
 
 interface ServicePricingSectionProps {
   pricing: PricingTier[];
+  serviceTitle: string;
 }
 
-export function ServicePricingSection({ pricing }: ServicePricingSectionProps) {
+export function ServicePricingSection({
+  pricing,
+  serviceTitle,
+}: ServicePricingSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: sectionRef,

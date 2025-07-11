@@ -4,11 +4,12 @@ import { transformServicesWithRelationsToServices } from "@/lib/utils/service-tr
 import type { ServiceWithRelations } from "@/lib/types/service-with-relations.type";
 import type { ServiceCategory } from "@/lib/types";
 
-// Import our new service components
-import { ServicesHeroSection } from "@/components/services/services-hero-section";
-import { ServicesGrid } from "@/components/services/services-grid";
-import { WhyChooseUsSection } from "@/components/services/why-choose-us-section";
-import { ServicesCtaSection } from "@/components/services/services-cta-section";
+// Import Site Wave service components
+import { SiteWaveServicesHero } from "@/components/services/site-wave-services-hero";
+import { SiteWaveServicesGrid } from "@/components/services/site-wave-services-grid";
+import { SiteWaveServicePackages } from "@/components/services/site-wave-service-packages";
+import { SiteWaveWhyChooseUs } from "@/components/services/site-wave-why-choose-us";
+import { SiteWaveServicesContact } from "@/components/services/site-wave-services-contact";
 import { getAllServices, getServicesNames } from "@/lib/api/services.api";
 import { getAllServiceCategories } from "@/lib/api/service-categories.api";
 import { generateSeoMetadata } from "@/lib/config/seo";
@@ -20,21 +21,47 @@ export async function generateMetadata() {
   const servicesNames = await getServicesNames();
 
   if (!servicesNames.success) {
-    return generateSeoMetadata({});
+    return generateSeoMetadata({
+      title: "Digital Services for Southwest Florida Businesses | Site Wave",
+      description:
+        "Professional website development, SEO, digital marketing, and business automation services for small businesses in Cape Coral, Fort Myers, and Naples, FL.",
+      keywords: [
+        "website development southwest florida",
+        "SEO Cape Coral",
+        "digital marketing Fort Myers",
+        "web design Naples FL",
+        "local business marketing SWFL",
+        "Google Business Profile setup",
+        "website redesign Florida",
+        "CRM automation",
+        "social media management",
+        "local SEO services",
+      ],
+    });
   }
 
   return generateSeoMetadata({
-    title: "Our Services | Professional Digital Solutions",
+    title: "Digital Services for Southwest Florida Businesses | Site Wave",
     description:
-      "Discover our comprehensive range of digital services including web development, mobile apps, UI/UX design, digital consulting, and cloud solutions.",
-    keywords: servicesNames.data,
+      "Professional website development, SEO, digital marketing, and business automation services for small businesses in Cape Coral, Fort Myers, and Naples, FL.",
+    keywords: [
+      ...servicesNames.data,
+      "website development southwest florida",
+      "SEO Cape Coral",
+      "digital marketing Fort Myers",
+      "web design Naples FL",
+      "local business marketing SWFL",
+      "Google Business Profile setup",
+      "website redesign Florida",
+      "CRM automation",
+      "social media management",
+      "local SEO services",
+    ],
   });
 }
 
 export default async function ServicesPage() {
   const baseUrl = getBaseUrl();
-
-  console.log(`Base URL: ${baseUrl}`);
 
   // Initialize with fallback data
   let services: ServiceWithRelations[] = [];
@@ -42,11 +69,6 @@ export default async function ServicesPage() {
   let error: string | null = null;
 
   // Fetch services (SSR)
-  // const servicesResponse = await fetch(`${baseUrl}/api/services`, {
-  //   // Add revalidation for better performance
-  //   next: { revalidate: 1800 }, // Revalidate every 30 minutes
-  // });
-
   const servicesResponse = await getAllServices();
 
   if (servicesResponse.success && servicesResponse.data) {
@@ -65,53 +87,59 @@ export default async function ServicesPage() {
   const serviceStructuredData = {
     "@context": "https://schema.org",
     "@type": "Service",
-    name: "Digital Services",
+    name: "Digital Services for Southwest Florida Businesses",
     description:
-      "Comprehensive digital solutions including web development, mobile apps, design, and consulting",
+      "Professional website development, SEO, digital marketing, and business automation services for small businesses in Cape Coral, Fort Myers, and Naples, FL.",
     provider: {
       "@type": "Organization",
-      name: "SiteWave",
+      name: "Site Wave by Monsoft Solutions",
       url: baseUrl,
+      address: {
+        "@type": "PostalAddress",
+        addressRegion: "FL",
+        addressLocality: "Southwest Florida",
+        addressCountry: "US",
+      },
     },
-    serviceType: services?.map((service) => service.title) || [],
-    areaServed: "Global",
+    serviceType: services?.map((service) => service.title) || [
+      "Website Development",
+      "SEO Optimization",
+      "Digital Marketing",
+      "Business Automation",
+      "Brand Design",
+    ],
+    areaServed: [
+      "Cape Coral, FL",
+      "Fort Myers, FL",
+      "Naples, FL",
+      "Southwest Florida",
+    ],
   };
 
   return (
     <>
       <JsonLd type="Organization" data={serviceStructuredData} />
 
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen">
         {/* Hero Section */}
-        <ServicesHeroSection />
+        <SiteWaveServicesHero />
 
         {/* Services Grid Section */}
-        <section id="services" className="py-24">
-          <div className="container">
-            <div className="mx-auto max-w-2xl text-center mb-16">
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-                Our Services
-              </h2>
-              <p className="text-lg text-muted-foreground">
-                We offer a comprehensive suite of digital services to help your
-                business thrive in the digital age.
-              </p>
-            </div>
+        <SiteWaveServicesGrid
+          services={transformServicesWithRelationsToServices(services)}
+          categories={categories}
+          isLoading={false}
+          error={error}
+        />
 
-            <ServicesGrid
-              services={transformServicesWithRelationsToServices(services)}
-              categories={categories}
-              isLoading={false} // No loading state in SSR
-              error={error}
-            />
-          </div>
-        </section>
+        {/* Service Packages Section */}
+        <SiteWaveServicePackages />
 
         {/* Why Choose Us Section */}
-        <WhyChooseUsSection />
+        <SiteWaveWhyChooseUs />
 
-        {/* CTA Section */}
-        <ServicesCtaSection />
+        {/* Contact Section */}
+        <SiteWaveServicesContact />
       </div>
     </>
   );

@@ -20,9 +20,15 @@ import {
 
 interface ServiceCtaSectionProps {
   serviceTitle: string;
+  category: string;
+  shortDescription: string;
 }
 
-export function ServiceCtaSection({ serviceTitle }: ServiceCtaSectionProps) {
+export function ServiceCtaSection({
+  serviceTitle,
+  category,
+  shortDescription,
+}: ServiceCtaSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: sectionRef,

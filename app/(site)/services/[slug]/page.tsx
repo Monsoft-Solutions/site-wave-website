@@ -3,18 +3,14 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { getBaseUrl } from "@/lib/utils/url.util";
 import type { ServiceWithRelations } from "@/lib/types/service-with-relations.type";
 
-// Import the new service detail components
+// Import the redesigned service detail components
 import { ServiceHeroSection } from "@/components/services/service-detail/service-hero-section";
-import { ServiceFeaturesSection } from "@/components/services/service-detail/service-features-section";
-import { ServiceBenefitsSection } from "@/components/services/service-detail/service-benefits-section";
+import { ServiceOverviewSection } from "@/components/services/service-detail/service-overview-section";
 import { ServiceProcessSection } from "@/components/services/service-detail/service-process-section";
 import { ServicePricingSection } from "@/components/services/service-detail/service-pricing-section";
-import { ServiceTechnologiesSection } from "@/components/services/service-detail/service-technologies-section";
-import { ServiceDeliverablesSection } from "@/components/services/service-detail/service-deliverables-section";
-import { ServiceGallerySection } from "@/components/services/service-detail/service-gallery-section";
-import { ServiceTestimonialSection } from "@/components/services/service-detail/service-testimonial-section";
+import { ServiceBenefitsSection } from "@/components/services/service-detail/service-benefits-section";
 import { ServiceFaqSection } from "@/components/services/service-detail/service-faq-section";
-import { ServiceRelatedSection } from "@/components/services/service-detail/service-related-section";
+import { ServiceTestimonialSection } from "@/components/services/service-detail/service-testimonial-section";
 import { ServiceCtaSection } from "@/components/services/service-detail/service-cta-section";
 import { getServiceBySlug } from "@/lib/api/services.api";
 import type { Metadata } from "next";
@@ -31,7 +27,7 @@ export async function generateMetadata({
 
   if (!serviceResult || !serviceResult.data) {
     return {
-      title: "Service Not Found",
+      title: "Service Not Found - Site Wave",
       description: "The requested service could not be found.",
     };
   }
@@ -39,11 +35,14 @@ export async function generateMetadata({
   const service = serviceResult.data;
 
   return generateSeoMetadata({
-    title: service.title,
+    title: `${service.title} - Site Wave Digital Services`,
     description: service.shortDescription,
     keywords: [
       service.title.toLowerCase(),
       service.category.toLowerCase(),
+      "southwest florida",
+      "digital services",
+      "site wave",
       ...(service.technologies || []),
     ],
   });
@@ -60,8 +59,6 @@ export default async function ServicePage({
   let service: ServiceWithRelations | null = null;
 
   try {
-    // Fetch the service (SSR)
-
     const serviceResponse = await getServiceBySlug(slug);
 
     if (!serviceResponse || !serviceResponse.data) {
@@ -87,8 +84,21 @@ export default async function ServicePage({
     category: service.category,
     provider: {
       "@type": "Organization",
-      name: "SiteWave",
+      name: "Site Wave by Monsoft Solutions",
       url: baseUrl,
+      logo: `${baseUrl}/logo.png`,
+      address: {
+        "@type": "PostalAddress",
+        addressRegion: "Florida",
+        addressLocality: "Southwest Florida",
+        addressCountry: "US",
+      },
+      contactPoint: {
+        "@type": "ContactPoint",
+        telephone: "+1-239-XXX-XXXX",
+        contactType: "customer service",
+        areaServed: "US",
+      },
     },
     ...(service.pricing.length > 0 && {
       offers: service.pricing.map((tier) => ({
@@ -97,9 +107,23 @@ export default async function ServicePage({
         price: tier.price,
         description: tier.description,
         category: "Service",
+        availability: "https://schema.org/InStock",
       })),
     }),
-    areaServed: "Global",
+    areaServed: ["Southwest Florida", "Cape Coral", "Fort Myers", "Naples"],
+    serviceType: service.category,
+    additionalProperty: [
+      {
+        "@type": "PropertyValue",
+        name: "Timeline",
+        value: service.timeline,
+      },
+      {
+        "@type": "PropertyValue",
+        name: "Technologies",
+        value: service.technologies?.join(", ") || "",
+      },
+    ],
   };
 
   return (
@@ -107,66 +131,50 @@ export default async function ServicePage({
       <JsonLd type="Organization" data={serviceStructuredData} />
 
       <div className="min-h-screen bg-background">
-        {/* Hero Section */}
+        {/* Hero Section - Main service introduction */}
         <ServiceHeroSection service={service} />
 
-        {/* Features Section */}
-        {service.features.length > 0 && (
-          <ServiceFeaturesSection features={service.features} />
-        )}
+        {/* Overview Section - Features and deliverables combined */}
+        <ServiceOverviewSection
+          features={service.features}
+          deliverables={service.deliverables}
+          technologies={service.technologies}
+          timeline={service.timeline}
+          category={service.category}
+        />
 
-        {/* Benefits Section */}
-        {service.benefits.length > 0 && (
-          <ServiceBenefitsSection
-            benefits={service.benefits}
-            serviceInfo={{
-              timeline: service.timeline,
-              category: service.category,
-              technologies: service.technologies,
-            }}
-          />
-        )}
-
-        {/* Process Section */}
+        {/* Process Section - How we work */}
         {service.process.length > 0 && (
           <ServiceProcessSection process={service.process} />
         )}
 
-        {/* Technologies Section */}
-        {service.technologies.length > 0 && (
-          <ServiceTechnologiesSection technologies={service.technologies} />
+        {/* Benefits Section - Why choose us for this service */}
+        {service.benefits.length > 0 && (
+          <ServiceBenefitsSection benefits={service.benefits} />
         )}
 
-        {/* Gallery Section */}
-        {service.gallery && service.gallery.length > 0 && (
-          <ServiceGallerySection gallery={service.gallery} />
-        )}
-
-        {/* Pricing Section */}
+        {/* Pricing Section - Investment and packages */}
         {service.pricing.length > 0 && (
-          <ServicePricingSection pricing={service.pricing} />
+          <ServicePricingSection
+            pricing={service.pricing}
+            serviceTitle={service.title}
+          />
         )}
 
-        {/* Deliverables Section */}
-        {service.deliverables.length > 0 && (
-          <ServiceDeliverablesSection deliverables={service.deliverables} />
-        )}
-
-        {/* Testimonial Section */}
+        {/* Testimonial Section - Social proof */}
         {service.testimonials && service.testimonials.length > 0 && (
           <ServiceTestimonialSection testimonials={service.testimonials} />
         )}
 
-        {/* FAQ Section */}
+        {/* FAQ Section - Common questions */}
         {service.faq.length > 0 && <ServiceFaqSection faq={service.faq} />}
 
-        {/* Related Services Section */}
-        {service.relatedServices.length > 0 && (
-          <ServiceRelatedSection relatedServices={service.relatedServices} />
-        )}
-
-        {/* CTA Section */}
-        <ServiceCtaSection serviceTitle={service.title} />
+        {/* CTA Section - Strong call to action */}
+        <ServiceCtaSection
+          serviceTitle={service.title}
+          category={service.category}
+          shortDescription={service.shortDescription}
+        />
       </div>
     </>
   );

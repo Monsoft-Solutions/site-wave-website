@@ -6,45 +6,47 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   ArrowRight,
-  PlayCircle,
-  ChevronRight,
   Clock,
-  Users,
   Star,
+  MapPin,
+  Phone,
+  Calendar,
+  Waves,
   Sparkles,
+  Target,
+  CheckCircle,
 } from "lucide-react";
-import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { useInView } from "react-intersection-observer";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 
-// Floating Particle Component
-const FloatingParticle = ({
+// Floating Wave Component
+const FloatingWave = ({
   delay = 0,
-  duration = 20,
+  duration = 8,
   x = 0,
   y = 0,
-  oscillation = 50,
 }: {
   delay?: number;
   duration?: number;
   x?: number;
   y?: number;
-  oscillation?: number;
 }) => (
   <motion.div
-    className="absolute w-2 h-2 bg-primary/30 rounded-full"
+    className="absolute w-8 h-8 text-ocean-blue/20"
     initial={{
       opacity: 0,
       x: x,
       y: y,
       scale: 0,
+      rotate: 0,
     }}
     animate={{
       opacity: [0, 1, 0],
-      y: y - 200,
-      x: [x, x + oscillation, x - oscillation, x],
+      y: y - 300,
+      x: [x, x + 50, x - 50, x],
       scale: [0, 1, 0],
-      rotate: 360,
+      rotate: [0, 180, 360],
     }}
     transition={{
       duration: duration,
@@ -52,7 +54,9 @@ const FloatingParticle = ({
       delay: delay,
       ease: "easeInOut",
     }}
-  />
+  >
+    <Waves className="w-full h-full" />
+  </motion.div>
 );
 
 interface ServiceData {
@@ -76,15 +80,14 @@ export function ServiceHeroSection({ service }: ServiceHeroSectionProps) {
     triggerOnce: true,
   });
 
-  // Client-side particle generation to avoid hydration mismatch
-  const [particles, setParticles] = useState<
+  // Client-side wave generation to avoid hydration mismatch
+  const [waves, setWaves] = useState<
     Array<{
       id: number;
       delay: number;
       duration: number;
       x: number;
       y: number;
-      oscillation: number;
     }>
   >([]);
 
@@ -93,30 +96,26 @@ export function ServiceHeroSection({ service }: ServiceHeroSectionProps) {
   useEffect(() => {
     setIsClient(true);
 
-    // Generate consistent particles only on client
-    const newParticles = Array.from({ length: 15 }, (_, i) => ({
+    // Generate consistent waves only on client
+    const newWaves = Array.from({ length: 12 }, (_, i) => ({
       id: i,
-      delay: i * 2,
-      duration: 15 + (i % 5) * 2,
+      delay: i * 1.5,
+      duration: 8 + (i % 4) * 2,
       x:
-        ((typeof window !== "undefined" ? window.innerWidth : 1200) / 15) * i +
-        (i % 3) * 100,
+        ((typeof window !== "undefined" ? window.innerWidth : 1200) / 12) * i +
+        (i % 3) * 80,
       y:
         (typeof window !== "undefined" ? window.innerHeight : 800) +
-        (i % 4) * 25,
-      oscillation: 30 + (i % 3) * 20,
+        (i % 4) * 20,
     }));
 
-    setParticles(newParticles);
+    setWaves(newWaves);
   }, []);
 
   const { scrollY } = useScroll();
   const y1 = useTransform(scrollY, [0, 300], [0, 100]);
   const y2 = useTransform(scrollY, [0, 300], [0, -100]);
-  const opacity = useTransform(scrollY, [0, 300], [1, 0]);
-
-  const springY1 = useSpring(y1, { stiffness: 100, damping: 30 });
-  const springY2 = useSpring(y2, { stiffness: 100, damping: 30 });
+  const opacity = useTransform(scrollY, [0, 300], [1, 0.7]);
 
   // Animation variants
   const containerVariants = {
@@ -131,7 +130,7 @@ export function ServiceHeroSection({ service }: ServiceHeroSectionProps) {
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 50, scale: 0.8 },
+    hidden: { opacity: 0, y: 60, scale: 0.8 },
     visible: {
       opacity: 1,
       y: 0,
@@ -144,129 +143,90 @@ export function ServiceHeroSection({ service }: ServiceHeroSectionProps) {
     },
   };
 
+  const imageVariants = {
+    hidden: { opacity: 0, scale: 0.8, rotateY: -20 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      rotateY: 0,
+      transition: {
+        type: "spring" as const,
+        stiffness: 80,
+        damping: 20,
+        delay: 0.5,
+      },
+    },
+  };
+
   const floatingVariants = {
     animate: {
-      y: [0, -10, 0],
+      y: [0, -15, 0],
+      rotate: [0, 2, -2, 0],
       transition: {
-        duration: 3,
+        duration: 4,
         repeat: Infinity,
+        ease: "easeInOut",
       },
     },
   };
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-accent/5 to-background">
-      {/* Animated Particles */}
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-soft-sand/40 via-background to-ocean-blue/10">
+      {/* Animated Coastal Background */}
+      <motion.div className="absolute inset-0" style={{ y: y1, opacity }}>
+        <div className="absolute inset-0 bg-grid-ocean-blue/5 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]" />
+      </motion.div>
+
+      {/* Floating Waves */}
       {isClient && (
         <div className="absolute inset-0 pointer-events-none">
-          {particles.map((particle) => (
-            <FloatingParticle key={particle.id} {...particle} />
+          {waves.map((wave) => (
+            <FloatingWave key={wave.id} {...wave} />
           ))}
         </div>
       )}
 
-      {/* Background Elements */}
-      <motion.div className="absolute inset-0" style={{ y: springY1 }}>
+      {/* Background Gradient Orbs */}
+      <motion.div className="absolute inset-0" style={{ y: y2 }}>
         <motion.div
-          className="absolute top-20 left-10 w-64 h-64 bg-primary/10 rounded-full blur-3xl"
+          className="absolute top-20 left-20 w-96 h-96 bg-ocean-blue/20 rounded-full blur-3xl"
           animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.6, 0.3],
+            scale: [1, 1.3, 1],
+            opacity: [0.3, 0.7, 0.3],
           }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute top-40 right-20 w-48 h-48 bg-accent/20 rounded-full blur-2xl"
+          className="absolute bottom-32 right-32 w-80 h-80 bg-coral-orange/20 rounded-full blur-3xl"
           animate={{
             scale: [1.2, 1, 1.2],
-            opacity: [0.4, 0.8, 0.4],
+            opacity: [0.2, 0.6, 0.2],
           }}
           transition={{
-            duration: 3,
+            duration: 10,
             repeat: Infinity,
             ease: "easeInOut",
-            delay: 1,
+            delay: 2,
           }}
         />
         <motion.div
-          className="absolute bottom-32 left-1/4 w-72 h-72 bg-secondary/15 rounded-full blur-3xl"
+          className="absolute top-1/2 right-1/4 w-64 h-64 bg-soft-sand/30 rounded-full blur-2xl"
           animate={{
-            scale: [0.8, 1.3, 0.8],
+            scale: [0.8, 1.4, 0.8],
             opacity: [0.2, 0.5, 0.2],
           }}
           transition={{
-            duration: 5,
+            duration: 12,
             repeat: Infinity,
             ease: "easeInOut",
-            delay: 0.5,
+            delay: 4,
           }}
         />
       </motion.div>
-
-      {/* Geometric Shapes */}
-      <motion.div className="absolute inset-0" style={{ y: springY2 }}>
-        <motion.div
-          className="absolute top-1/3 right-10 w-6 h-6 bg-gradient-to-r from-primary to-accent"
-          animate={{
-            rotate: 360,
-            scale: [1, 1.5, 1],
-          }}
-          transition={{
-            rotate: { duration: 8, repeat: Infinity, ease: "linear" },
-            scale: { duration: 2, repeat: Infinity, ease: "easeInOut" },
-          }}
-        />
-        <motion.div
-          className="absolute bottom-1/3 left-20 w-4 h-4 bg-accent rounded-full"
-          animate={{
-            y: [-20, 20, -20],
-            x: [-10, 10, -10],
-            scale: [1, 1.3, 1],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 0.7,
-          }}
-        />
-      </motion.div>
-
-      {/* Breadcrumb */}
-      <motion.nav
-        className="absolute top-8 left-0 w-full z-20"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="container">
-          <ol className="flex items-center space-x-2 text-sm">
-            <li>
-              <Link
-                href="/"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Home
-              </Link>
-            </li>
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-            <li>
-              <Link
-                href="/services"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Services
-              </Link>
-            </li>
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-            <li className="text-foreground font-medium">{service.title}</li>
-          </ol>
-        </div>
-      </motion.nav>
 
       <div className="container relative z-10" ref={ref}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* Left Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center py-20 lg:py-32">
+          {/* Content Side */}
           <motion.div
             className="text-center lg:text-left"
             variants={containerVariants}
@@ -278,154 +238,216 @@ export function ServiceHeroSection({ service }: ServiceHeroSectionProps) {
               <motion.div variants={floatingVariants} animate="animate">
                 <Badge
                   variant="outline"
-                  className="px-4 py-2 text-sm border-primary/20 bg-primary/10 text-primary hover:bg-primary/20 transition-colors mb-6"
+                  className="mb-6 px-6 py-3 text-sm border-ocean-blue/30 bg-ocean-blue/5 text-ocean-blue hover:bg-ocean-blue/10 transition-all duration-300"
                 >
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  {service.category}
+                  <Waves className="w-4 h-4 mr-2" />
+                  {service.category} Service
                 </Badge>
               </motion.div>
             </motion.div>
 
-            {/* Main Title */}
-            <motion.div variants={itemVariants}>
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6">
-                <motion.span
-                  className="block text-foreground"
-                  initial={{ opacity: 0, x: -100 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.8, delay: 0.5 }}
-                >
-                  {service.title}
-                </motion.span>
-              </h1>
-            </motion.div>
+            {/* Main Headline */}
+            <motion.h1
+              className="text-4xl md:text-6xl lg:text-7xl font-bold font-heading text-deep-navy mb-6 leading-tight"
+              variants={itemVariants}
+            >
+              {service.title}
+              <motion.span
+                className="block text-ocean-blue mt-2"
+                initial={{ opacity: 0, x: -20 }}
+                animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+                transition={{ delay: 0.8, duration: 0.8 }}
+              >
+                for SWFL Businesses
+              </motion.span>
+            </motion.h1>
 
             {/* Description */}
-            <motion.div variants={itemVariants}>
-              <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl leading-relaxed">
-                {service.fullDescription}
-              </p>
+            <motion.p
+              className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed max-w-2xl"
+              variants={itemVariants}
+            >
+              {service.shortDescription}
+            </motion.p>
+
+            {/* Key Points */}
+            <motion.div
+              className="flex flex-wrap gap-4 mb-8"
+              variants={itemVariants}
+            >
+              <div className="flex items-center text-sm text-muted-foreground">
+                <Clock className="w-4 h-4 text-ocean-blue mr-2" />
+                <span>{service.timeline}</span>
+              </div>
+              <div className="flex items-center text-sm text-muted-foreground">
+                <MapPin className="w-4 h-4 text-coral-orange mr-2" />
+                <span>Southwest Florida</span>
+              </div>
+              <div className="flex items-center text-sm text-muted-foreground">
+                <Star className="w-4 h-4 text-ocean-blue mr-2" />
+                <span>5-Star Local Service</span>
+              </div>
             </motion.div>
 
             {/* CTA Buttons */}
             <motion.div
-              variants={itemVariants}
               className="flex flex-col sm:flex-row gap-4 mb-8"
+              variants={itemVariants}
             >
-              <Button size="lg" asChild className="group">
-                <Link href="/contact">
-                  Get Started
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </Button>
-              <Button variant="outline" size="lg" className="group">
-                <PlayCircle className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                Watch Demo
-              </Button>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button
+                  asChild
+                  size="lg"
+                  className="bg-ocean-blue hover:bg-ocean-blue/90 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  <Link href="#contact">
+                    Get Free Consultation
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Link>
+                </Button>
+              </motion.div>
+
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  className="border-coral-orange text-coral-orange hover:bg-coral-orange hover:text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300"
+                >
+                  <Link href="tel:+1-239-XXX-XXXX">
+                    <Phone className="w-5 h-5 mr-2" />
+                    Call Now
+                  </Link>
+                </Button>
+              </motion.div>
             </motion.div>
 
-            {/* Service Details */}
+            {/* Trust Indicators */}
             <motion.div
+              className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground"
               variants={itemVariants}
-              className="flex items-center space-x-6 text-muted-foreground"
             >
               <div className="flex items-center">
-                <Clock className="w-5 h-5 mr-2 text-primary" />
-                <span>{service.timeline}</span>
+                <CheckCircle className="w-4 h-4 text-ocean-blue mr-2" />
+                <span>100+ Happy Clients</span>
               </div>
               <div className="flex items-center">
-                <Users className="w-5 h-5 mr-2 text-primary" />
-                <span>Dedicated Team</span>
+                <CheckCircle className="w-4 h-4 text-coral-orange mr-2" />
+                <span>Local SWFL Team</span>
+              </div>
+              <div className="flex items-center">
+                <CheckCircle className="w-4 h-4 text-ocean-blue mr-2" />
+                <span>Results Guaranteed</span>
               </div>
             </motion.div>
           </motion.div>
 
-          {/* Right Content - Featured Image */}
+          {/* Image Side */}
           <motion.div
             className="relative"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={
-              inView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }
-            }
-            transition={{ duration: 0.8, delay: 0.4 }}
+            variants={imageVariants}
+            initial="hidden"
+            animate={inView ? "visible" : "hidden"}
           >
-            <div className="relative">
-              {/* Main image */}
-              <motion.div
-                className="relative overflow-hidden rounded-3xl shadow-2xl"
-                whileHover={{ scale: 1.02 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Image
-                  src={service.featuredImage}
-                  alt={service.title}
-                  width={600}
-                  height={400}
-                  className="w-full h-auto object-cover"
-                />
+            <motion.div
+              className="relative rounded-2xl overflow-hidden shadow-2xl border border-ocean-blue/20 bg-background"
+              whileHover={{
+                scale: 1.02,
+                rotateY: 5,
+                rotateX: 2,
+              }}
+              transition={{ duration: 0.3 }}
+              style={{ transformStyle: "preserve-3d" }}
+            >
+              <Image
+                src={service.featuredImage}
+                alt={`${service.title} - Site Wave Digital Services`}
+                width={600}
+                height={400}
+                className="w-full h-auto"
+                priority
+              />
 
-                {/* Overlay gradient */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent" />
-              </motion.div>
-
-              {/* Floating Stats Cards */}
+              {/* Floating Elements */}
               <motion.div
-                className="absolute -bottom-6 -left-6 bg-card border shadow-lg rounded-lg p-4"
-                initial={{ opacity: 0, scale: 0, rotate: -10 }}
-                animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                transition={{ duration: 0.8, delay: 1.5 }}
-                whileHover={{ scale: 1.1, rotate: 5 }}
+                className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2 shadow-lg"
+                variants={floatingVariants}
+                animate="animate"
               >
-                <motion.div
-                  className="text-2xl font-bold text-primary"
-                  animate={{ scale: [1, 1.1, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
-                  <Star className="w-6 h-6 inline-block mr-2" />
-                  5.0
-                </motion.div>
-                <div className="text-sm text-muted-foreground">
-                  Client Rating
+                <div className="flex items-center text-sm">
+                  <Star className="w-4 h-4 text-coral-orange mr-1" />
+                  <span className="font-semibold text-deep-navy">
+                    5.0 Rating
+                  </span>
                 </div>
               </motion.div>
 
               <motion.div
-                className="absolute -top-4 -right-4 bg-card border shadow-lg rounded-lg p-4"
-                initial={{ opacity: 0, scale: 0, rotate: 10 }}
-                animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                transition={{ duration: 0.8, delay: 1.7 }}
-                whileHover={{ scale: 1.1, rotate: -5 }}
+                className="absolute bottom-4 left-4 bg-ocean-blue/90 backdrop-blur-sm text-white rounded-xl px-4 py-2 shadow-lg"
+                variants={floatingVariants}
+                animate="animate"
+                transition={{ delay: 1 }}
               >
-                <motion.div
-                  className="text-lg font-bold text-primary"
-                  animate={{ scale: [1, 1.1, 1] }}
-                  transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                >
-                  100+
-                </motion.div>
-                <div className="text-xs text-muted-foreground">
-                  Projects Done
+                <div className="flex items-center text-sm">
+                  <Target className="w-4 h-4 mr-2" />
+                  <span className="font-semibold">Local Experts</span>
                 </div>
               </motion.div>
 
-              {/* Background orbs */}
+              {/* Sparkle Effects */}
               <motion.div
-                className="absolute -top-4 -right-4 w-20 h-20 bg-primary/20 rounded-full blur-xl"
+                className="absolute top-1/4 left-4 w-6 h-6 text-coral-orange/60"
                 animate={{
-                  scale: [1, 1.3, 1],
-                  opacity: [0.3, 0.7, 0.3],
+                  scale: [0, 1, 0],
+                  rotate: [0, 180, 360],
+                  opacity: [0, 1, 0],
                 }}
-                transition={{ duration: 3, repeat: Infinity }}
-              />
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  repeatDelay: 1,
+                }}
+              >
+                <Sparkles className="w-full h-full" />
+              </motion.div>
+
               <motion.div
-                className="absolute -bottom-6 -left-6 w-32 h-32 bg-accent/20 rounded-full blur-2xl"
+                className="absolute bottom-1/3 right-6 w-4 h-4 text-ocean-blue/60"
                 animate={{
-                  scale: [1.3, 1, 1.3],
-                  opacity: [0.2, 0.6, 0.2],
+                  scale: [0, 1, 0],
+                  rotate: [0, -180, -360],
+                  opacity: [0, 1, 0],
                 }}
-                transition={{ duration: 4, repeat: Infinity, delay: 1 }}
-              />
-            </div>
+                transition={{
+                  duration: 2.5,
+                  repeat: Infinity,
+                  repeatDelay: 1.5,
+                  delay: 0.5,
+                }}
+              >
+                <Sparkles className="w-full h-full" />
+              </motion.div>
+            </motion.div>
+
+            {/* Background Glow */}
+            <motion.div
+              className="absolute -inset-4 bg-gradient-to-r from-ocean-blue/20 to-coral-orange/20 rounded-2xl blur-xl opacity-0"
+              animate={{
+                opacity: [0, 0.7, 0],
+                scale: [1, 1.05, 1],
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
           </motion.div>
         </div>
       </div>
@@ -433,23 +455,16 @@ export function ServiceHeroSection({ service }: ServiceHeroSectionProps) {
       {/* Scroll Indicator */}
       <motion.div
         className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-        style={{ opacity }}
         animate={{ y: [0, 10, 0] }}
-        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        transition={{ duration: 2, repeat: Infinity }}
       >
-        <motion.div
-          className="w-6 h-10 border-2 border-muted-foreground/30 rounded-full p-1 cursor-pointer hover:border-primary/50 transition-colors duration-300"
-          whileHover={{ scale: 1.1 }}
-        >
+        <div className="w-6 h-10 border-2 border-ocean-blue/30 rounded-full flex justify-center">
           <motion.div
-            className="w-2 h-3 bg-muted-foreground/50 rounded-full mx-auto"
-            animate={{
-              y: [0, 12, 0],
-              opacity: [0.5, 1, 0.5],
-            }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            className="w-1 h-3 bg-ocean-blue rounded-full mt-2"
+            animate={{ y: [0, 12, 0] }}
+            transition={{ duration: 2, repeat: Infinity }}
           />
-        </motion.div>
+        </div>
       </motion.div>
     </section>
   );
