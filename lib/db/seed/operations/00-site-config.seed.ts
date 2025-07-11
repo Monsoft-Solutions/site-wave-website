@@ -4,49 +4,73 @@ import type { NewSiteConfig } from "@/lib/types/site-config.type";
 import type { SeedOperation } from "../types/seed-config.type";
 
 /**
- * Site configuration data based on current hardcoded values
+ * Site configuration data for Site Wave by Monsoft Solutions
  */
 const siteConfigData: NewSiteConfig = {
-  name: "Monsoft Solutions",
+  name: "Site Wave",
   description:
-    "Monsoft Solutions is a software development company that provides software development services to businesses.",
+    "Site Wave provides high-quality digital services for small businesses and entrepreneurs in Cape Coral, Fort Myers, Naples, and across Southwest Florida. We help local businesses grow through smart, scalable technology including website development, SEO, digital marketing, and business automation.",
   ogImage: "/og-image.jpg",
   links: {
-    twitter: "https://twitter.com/yourhandle",
-    github: "https://github.com/yourhandle",
-    linkedin: "https://linkedin.com/in/yourhandle",
-    facebook: "https://facebook.com/yourpage",
-    instagram: "https://instagram.com/yourhandle",
+    twitter: "https://twitter.com/sitewavefl",
+    github: "https://github.com/monsoft-solutions",
+    linkedin: "https://linkedin.com/company/monsoft-solutions",
+    facebook: "https://www.facebook.com/sitewave.swfl",
+    instagram: "https://instagram.com/sitewave.fl",
   },
   creator: {
-    name: "Your Name",
-    email: "contact@yoursite.com",
-    twitter: "@yourhandle",
-    url: "https://yoursite.com",
+    name: "Site Wave",
+    email: "contact@sitewavefl.com",
+    twitter: "@sitewavefl",
+    url: "https://www.sitewavefl.com",
   },
-  keywords: ["nextjs", "react", "template", "website", "seo", "blog"],
+  keywords: [
+    "website development",
+    "website design",
+    "website maintenance",
+    "website hosting",
+    "website management",
+    "website support",
+    "website development",
+    "website design",
+    "SEO",
+    "digital marketing",
+    "Southwest Florida",
+    "SWFL",
+    "Cape Coral",
+    "Fort Myers",
+    "Naples",
+    "small business",
+    "automation",
+    "local business",
+    "web design",
+    "google business profile",
+    "social media",
+    "CRM",
+    "analytics",
+  ],
   language: "en",
   locale: "en_US",
   theme: {
-    primaryColor: "#000000",
-    secondaryColor: "#ffffff",
+    primaryColor: "#0077B6", // Ocean Blue
+    secondaryColor: "#FF6B35", // Coral Orange
   },
   socialMedia: {
     twitter: {
       card: "summary_large_image",
-      site: "@yourhandle",
-      creator: "@yourhandle",
+      site: "@sitewavefl",
+      creator: "@sitewavefl",
     },
   },
   metadata: {
     generator: "Next.js",
-    applicationName: "Your Site Name",
+    applicationName: "Site Wave - Digital Services for SWFL",
     referrer: "origin-when-cross-origin",
-    authors: [{ name: "Your Name", url: "https://yoursite.com" }],
+    authors: [{ name: "Site Wave", url: "https://www.sitewavefl.com" }],
     colorScheme: "light dark",
     themeColor: [
-      { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-      { media: "(prefers-color-scheme: dark)", color: "#000000" },
+      { media: "(prefers-color-scheme: light)", color: "#F4F1DE" }, // Soft Sand
+      { media: "(prefers-color-scheme: dark)", color: "#023047" }, // Deep Navy
     ],
     viewport: {
       width: "device-width",
