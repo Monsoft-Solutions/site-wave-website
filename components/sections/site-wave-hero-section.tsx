@@ -71,7 +71,7 @@ const itemVariants = {
     scale: 1,
     transition: {
       duration: 0.8,
-      ease: "easeOut",
+      ease: "easeOut" as const,
     },
   },
 };
@@ -82,7 +82,7 @@ const floatingVariants = {
     transition: {
       duration: 4,
       repeat: Infinity,
-      ease: "easeInOut",
+      ease: "easeInOut" as const,
     },
   },
 };
@@ -318,7 +318,9 @@ export function SiteWaveHeroSection() {
               >
                 <div className="flex items-center gap-2">
                   <Phone className="w-4 h-4 text-ocean-blue" />
-                  <span className="text-sm">Ready to chat? Let's connect</span>
+                  <span className="text-sm">
+                    Ready to chat? Let&apos;s connect
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="w-4 h-4 text-coral-orange" />

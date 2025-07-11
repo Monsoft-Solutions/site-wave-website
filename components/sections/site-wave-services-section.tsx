@@ -230,8 +230,8 @@ export function SiteWaveServicesSection() {
               Need a Custom Solution?
             </h3>
             <p className="text-lg text-muted-foreground mb-6">
-              Every business is unique. Let's create a tailored package that
-              fits your specific needs and budget.
+              Every business is unique. Let&apos;s create a tailored package
+              that fits your specific needs and budget.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button

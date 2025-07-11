@@ -25,7 +25,7 @@ export function SiteWaveCtaSection() {
             Ready to Grow Your Business?
           </h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Let's discuss how we can help your Southwest Florida business
+            Let&apos;s discuss how we can help your Southwest Florida business
             succeed online. Free consultation • No obligation • Local expertise
           </p>
 
@@ -70,7 +70,7 @@ export function SiteWaveCtaSection() {
                 Call Us Today
               </h3>
               <p className="text-muted-foreground">
-                Ready to chat? We're here to help you succeed
+                Ready to chat? We&apos;re here to help you succeed
               </p>
             </motion.div>
 

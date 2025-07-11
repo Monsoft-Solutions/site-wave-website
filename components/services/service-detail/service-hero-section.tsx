@@ -10,7 +10,6 @@ import {
   Star,
   MapPin,
   Phone,
-  Calendar,
   Waves,
   Sparkles,
   Target,
@@ -165,7 +164,7 @@ export function ServiceHeroSection({ service }: ServiceHeroSectionProps) {
       transition: {
         duration: 4,
         repeat: Infinity,
-        ease: "easeInOut",
+        ease: "easeInOut" as const,
       },
     },
   };

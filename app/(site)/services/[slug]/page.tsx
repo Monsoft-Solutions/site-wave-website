@@ -155,10 +155,7 @@ export default async function ServicePage({
 
         {/* Pricing Section - Investment and packages */}
         {service.pricing.length > 0 && (
-          <ServicePricingSection
-            pricing={service.pricing}
-            serviceTitle={service.title}
-          />
+          <ServicePricingSection pricing={service.pricing} />
         )}
 
         {/* Testimonial Section - Social proof */}
@@ -170,11 +167,7 @@ export default async function ServicePage({
         {service.faq.length > 0 && <ServiceFaqSection faq={service.faq} />}
 
         {/* CTA Section - Strong call to action */}
-        <ServiceCtaSection
-          serviceTitle={service.title}
-          category={service.category}
-          shortDescription={service.shortDescription}
-        />
+        <ServiceCtaSection serviceTitle={service.title} />
       </div>
     </>
   );
