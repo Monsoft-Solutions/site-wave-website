@@ -7,48 +7,61 @@ import type { SiteConfigData } from "../types/site-config.type";
  * For server-side dynamic config, use getSiteConfigFromDB from site-config.util.ts
  */
 export const siteConfig = {
-  name: "Monsoft Solutions",
+  name: "Site Wave",
   description:
-    "Monsoft Solutions is a software development company that provides software development services to businesses.",
+    "Site Wave by Monsoft Solutions provides website development, SEO, digital marketing, and business automation services for small businesses in Cape Coral, Fort Myers, Naples, and Southwest Florida.",
   url: clientEnv.NEXT_PUBLIC_SITE_URL,
   ogImage: "/og-image.jpg",
   links: {
-    twitter: "https://twitter.com/yourhandle",
-    github: "https://github.com/yourhandle",
-    linkedin: "https://linkedin.com/in/yourhandle",
-    facebook: "https://facebook.com/yourpage",
-    instagram: "https://instagram.com/yourhandle",
+    twitter: "https://twitter.com/sitewavefl",
+    github: "https://github.com/monsoft-solutions",
+    linkedin: "https://linkedin.com/company/monsoft-solutions",
+    facebook: "https://facebook.com/sitewavefl",
+    instagram: "https://instagram.com/sitewavefl",
   },
   creator: {
-    name: "Your Name",
-    email: "contact@yoursite.com",
-    twitter: "@yourhandle",
-    url: "https://yoursite.com",
+    name: "Site Wave by Monsoft Solutions",
+    email: "hello@sitewave.io",
+    twitter: "@sitewavefl",
+    url: "https://sitewave.io",
   },
-  keywords: ["nextjs", "react", "template", "website", "seo", "blog"],
+  keywords: [
+    "website development southwest florida",
+    "SEO Cape Coral",
+    "digital marketing Fort Myers",
+    "web design Naples FL",
+    "local business marketing SWFL",
+    "Google Business Profile setup",
+    "website redesign Florida",
+    "CRM automation",
+    "social media management",
+    "local SEO services",
+  ],
   language: "en",
   locale: "en_US",
   theme: {
-    primaryColor: "#000000",
-    secondaryColor: "#ffffff",
+    primaryColor: "#0077B6", // Ocean Blue
+    secondaryColor: "#FF6B35", // Coral Orange
   },
   socialMedia: {
     twitter: {
       card: "summary_large_image",
-      site: "@yourhandle",
-      creator: "@yourhandle",
+      site: "@sitewavefl",
+      creator: "@sitewavefl",
     },
   },
   metadata: {
     metadataBase: new URL(clientEnv.NEXT_PUBLIC_SITE_URL),
     generator: "Next.js",
-    applicationName: "Your Site Name",
+    applicationName: "Site Wave - Digital Services for Southwest Florida",
     referrer: "origin-when-cross-origin",
-    authors: [{ name: "Your Name", url: "https://yoursite.com" }],
+    authors: [
+      { name: "Site Wave by Monsoft Solutions", url: "https://sitewave.io" },
+    ],
     colorScheme: "light dark",
     themeColor: [
-      { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-      { media: "(prefers-color-scheme: dark)", color: "#000000" },
+      { media: "(prefers-color-scheme: light)", color: "#0077B6" },
+      { media: "(prefers-color-scheme: dark)", color: "#023047" },
     ],
     viewport: {
       width: "device-width",
