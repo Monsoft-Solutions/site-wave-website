@@ -118,6 +118,84 @@ export const getAllServices = unstable_cache(
 );
 
 /**
+ * Get all services with their relations - non-cached version for scripts
+ */
+export async function getAllServicesUncached(): Promise<
+  ApiResponse<ServiceWithRelations[]>
+> {
+  try {
+    // Get all services first
+    const allServices = await db
+      .select()
+      .from(services)
+      .where(eq(services.status, "published"))
+      .orderBy(asc(services.createdAt));
+
+    if (allServices.length === 0) {
+      return { success: true, data: [] };
+    }
+
+    const serviceIds = allServices.map((s) => s.id);
+
+    // Fetch all related data in parallel using efficient queries
+    const [
+      featuresMap,
+      benefitsMap,
+      processStepsMap,
+      technologiesMap,
+      deliverablesMap,
+      galleryImagesMap,
+      testimonialsMap,
+      faqsMap,
+      relatedServicesMap,
+      pricingData,
+    ] = await Promise.all([
+      getServiceFeaturesByIds(serviceIds),
+      getServiceBenefitsByIds(serviceIds),
+      getServiceProcessStepsByIds(serviceIds),
+      getServiceTechnologiesByIds(serviceIds),
+      getServiceDeliverablesByIds(serviceIds),
+      getServiceGalleryImagesByIds(serviceIds),
+      getServiceTestimonialsByIds(serviceIds),
+      getServiceFaqsByIds(serviceIds),
+      getRelatedServicesByIds(serviceIds),
+      getServicePricingDataByIds(serviceIds),
+    ]);
+
+    // Transform services with their relations
+    const transformedServices: ServiceWithRelations[] = allServices.map(
+      (service) => {
+        return buildServiceFromMaps(
+          service,
+          featuresMap,
+          benefitsMap,
+          processStepsMap,
+          technologiesMap,
+          deliverablesMap,
+          galleryImagesMap,
+          testimonialsMap,
+          faqsMap,
+          relatedServicesMap,
+          pricingData
+        );
+      }
+    );
+
+    return {
+      success: true,
+      data: transformedServices,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: [],
+      error:
+        error instanceof Error ? error.message : "Failed to fetch services",
+    };
+  }
+}
+
+/**
  * Get a service by slug with all its relations
  */
 export const getServiceBySlug = unstable_cache(

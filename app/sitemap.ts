@@ -3,8 +3,11 @@ import {
   getBlogPosts,
   getBlogCategories,
   getBlogTags,
+  getBlogPostsUncached,
+  getBlogCategoriesUncached,
+  getBlogTagsUncached,
 } from "@/lib/api/blog.service";
-import { getAllServices } from "@/lib/api/services.api";
+import { getAllServices, getAllServicesUncached } from "@/lib/api/services.api";
 import fs from "fs";
 import path from "path";
 import { env } from "@/lib/env";
@@ -190,6 +193,76 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     // Fetch all services
     const servicesResult = await getAllServices();
+    const servicePages: MetadataRoute.Sitemap = servicesResult.success
+      ? servicesResult.data.map((service) => ({
+          url: `${env.NEXT_PUBLIC_SITE_URL}/services/${service.slug}`,
+          lastModified: service.updatedAt,
+          changeFrequency: "monthly" as const,
+          priority: 0.7,
+        }))
+      : [];
+
+    return [
+      ...staticPages,
+      ...blogPostPages,
+      ...categoryPages,
+      ...tagPages,
+      ...servicePages,
+    ];
+  } catch (error) {
+    console.error("Error generating dynamic sitemap entries:", error);
+    // Return at least the static pages if there's an error
+    return staticPages;
+  }
+}
+
+/**
+ * Script-friendly sitemap function that uses non-cached API functions
+ * This is specifically for use in scripts that run outside the Next.js runtime
+ */
+export async function sitemapForScript(): Promise<MetadataRoute.Sitemap> {
+  // Generate static pages dynamically
+  const staticPages = generateStaticPages();
+
+  try {
+    // Fetch all published blog posts using non-cached function
+    const blogResult = await getBlogPostsUncached({
+      limit: 1000, // Get all posts
+      status: "published",
+    });
+
+    // Generate blog post URLs
+    const blogPostPages: MetadataRoute.Sitemap = blogResult.posts.map(
+      (post) => ({
+        url: `${env.NEXT_PUBLIC_SITE_URL}/blog/${post.slug}`,
+        lastModified: post.updatedAt,
+        changeFrequency: "weekly" as const,
+        priority: 0.6,
+      })
+    );
+
+    // Fetch all categories using non-cached function
+    const categories = await getBlogCategoriesUncached();
+    const categoryPages: MetadataRoute.Sitemap = categories
+      .filter((cat) => cat.category.slug !== "all") // Skip the "all" category
+      .map((cat) => ({
+        url: `${env.NEXT_PUBLIC_SITE_URL}/blog/category/${cat.category.slug}`,
+        lastModified: cat.category.updatedAt,
+        changeFrequency: "weekly" as const,
+        priority: 0.5,
+      }));
+
+    // Fetch all tags using non-cached function
+    const tags = await getBlogTagsUncached();
+    const tagPages: MetadataRoute.Sitemap = tags.map((tag) => ({
+      url: `${env.NEXT_PUBLIC_SITE_URL}/blog/tag/${tag.tag.slug}`,
+      lastModified: tag.tag.createdAt,
+      changeFrequency: "weekly" as const,
+      priority: 0.4,
+    }));
+
+    // Fetch all services using non-cached function
+    const servicesResult = await getAllServicesUncached();
     const servicePages: MetadataRoute.Sitemap = servicesResult.success
       ? servicesResult.data.map((service) => ({
           url: `${env.NEXT_PUBLIC_SITE_URL}/services/${service.slug}`,

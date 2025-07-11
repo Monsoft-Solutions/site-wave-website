@@ -138,6 +138,112 @@ export const getBlogPosts = unstable_cache(
 );
 
 /**
+ * Get published blog posts with filtering, search, and pagination (non-cached version for scripts)
+ */
+export async function getBlogPostsUncached(
+  options: BlogListOptions = {}
+): Promise<BlogListResponse> {
+  const {
+    page = 1,
+    limit = 10,
+    status = "published",
+    categorySlug,
+    tagSlug,
+    searchQuery,
+  } = options;
+
+  const offset = (page - 1) * limit;
+
+  // Build where conditions
+  const conditions = [eq(blogPosts.status, status)];
+
+  // Add category filter
+  if (categorySlug && categorySlug !== "all") {
+    conditions.push(eq(categories.slug, categorySlug));
+  }
+
+  // Add search filter
+  if (searchQuery) {
+    const searchTerm = `%${searchQuery}%`;
+    conditions.push(
+      or(
+        like(blogPosts.title, searchTerm),
+        like(blogPosts.excerpt, searchTerm),
+        like(blogPosts.content, searchTerm)
+      )!
+    );
+  }
+
+  // Add tag filter
+  if (tagSlug) {
+    conditions.push(
+      exists(
+        db
+          .select({ id: blogPostsTags.postId })
+          .from(blogPostsTags)
+          .leftJoin(tags, eq(blogPostsTags.tagId, tags.id))
+          .where(
+            and(eq(blogPostsTags.postId, blogPosts.id), eq(tags.slug, tagSlug))
+          )
+      )
+    );
+  }
+
+  // Get posts with basic joins
+  const postsResult = await db
+    .select({
+      post: blogPosts,
+      author: authors,
+      category: categories,
+    })
+    .from(blogPosts)
+    .leftJoin(authors, eq(blogPosts.authorId, authors.id))
+    .leftJoin(categories, eq(blogPosts.categoryId, categories.id))
+    .where(and(...conditions))
+    .orderBy(desc(blogPosts.publishedAt), desc(blogPosts.createdAt))
+    .limit(limit)
+    .offset(offset);
+
+  // Get total count with same conditions
+  const totalCountResult = await db
+    .select({ count: count() })
+    .from(blogPosts)
+    .leftJoin(categories, eq(blogPosts.categoryId, categories.id))
+    .where(and(...conditions));
+
+  const totalPosts = totalCountResult[0]?.count || 0;
+  const totalPages = Math.ceil(totalPosts / limit);
+
+  // Get tags for each post
+  const postsWithTags = await Promise.all(
+    postsResult.map(async (result) => {
+      const postTags = await db
+        .select({ tag: tags })
+        .from(blogPostsTags)
+        .leftJoin(tags, eq(blogPostsTags.tagId, tags.id))
+        .where(eq(blogPostsTags.postId, result.post.id));
+
+      return {
+        ...result.post,
+        author: result.author!,
+        category: result.category!,
+        tags: postTags.map((pt) => pt.tag!),
+        readingTime: calculateReadingTime(result.post.content),
+      };
+    })
+  );
+
+  return {
+    posts: postsWithTags,
+    totalPosts,
+    totalPages,
+    currentPage: page,
+    hasNextPage: page < totalPages,
+    hasPreviousPage: page > 1,
+  };
+}
+
+/**
  * Get a single blog post by slug with all relations
  */
 export const getBlogPostBySlug = unstable_cache(
@@ -310,6 +416,51 @@ export const getBlogCategories = unstable_cache(
 );
 
 /**
+ * Get all categories with post counts (non-cached version for scripts)
+ */
+export async function getBlogCategoriesUncached() {
+  const categoriesResult = await db
+    .select({
+      category: categories,
+      postCount: count(blogPosts.id),
+    })
+    .from(categories)
+    .leftJoin(
+      blogPosts,
+      and(
+        eq(categories.id, blogPosts.categoryId),
+        eq(blogPosts.status, "published")
+      )
+    )
+    .groupBy(categories.id)
+    .orderBy(categories.name);
+
+  // Get total posts count
+  const totalPostsResult = await db
+    .select({ count: count() })
+    .from(blogPosts)
+    .where(eq(blogPosts.status, "published"));
+
+  const totalPosts = totalPostsResult[0]?.count || 0;
+
+  // Add "All" category at the beginning
+  return [
+    {
+      category: {
+        id: "all",
+        name: "All",
+        slug: "all",
+        description: "All blog posts",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      postCount: totalPosts,
+    },
+    ...categoriesResult,
+  ];
+}
+
+/**
  * Get all tags with post counts
  */
 export const getBlogTags = unstable_cache(
@@ -340,6 +491,31 @@ export const getBlogTags = unstable_cache(
     revalidate: 3600, // Cache for 1 hour
   }
 );
+
+/**
+ * Get all tags with post counts (non-cached version for scripts)
+ */
+export async function getBlogTagsUncached() {
+  const tagsResult = await db
+    .select({
+      tag: tags,
+      postCount: count(blogPosts.id),
+    })
+    .from(tags)
+    .leftJoin(blogPostsTags, eq(tags.id, blogPostsTags.tagId))
+    .leftJoin(
+      blogPosts,
+      and(
+        eq(blogPostsTags.postId, blogPosts.id),
+        eq(blogPosts.status, "published")
+      )
+    )
+    .groupBy(tags.id)
+    .having(sql`count(${blogPosts.id}) > 0`)
+    .orderBy(desc(count(blogPosts.id)), tags.name);
+
+  return tagsResult;
+}
 
 /**
  * Get posts by category slug

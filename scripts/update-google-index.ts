@@ -13,8 +13,8 @@
  */
 
 import { GoogleIndexingClient } from "@monsoft/google-indexing";
-import sitemap from "@/app/sitemap";
-import { siteConfig } from "@/lib/config/site";
+import { sitemapForScript } from "@/app/sitemap";
+import { env } from "@/lib/env";
 
 // Helper functions for credentials
 function getClientEmail() {
@@ -39,9 +39,9 @@ async function main() {
   try {
     console.log("🚀 Starting Google indexing update...");
 
-    // Get URLs from the dynamic sitemap
+    // Get URLs from the dynamic sitemap using script-friendly function
     console.log("📋 Fetching URLs from dynamic sitemap...");
-    const sitemapData = await sitemap();
+    const sitemapData = await sitemapForScript();
     const urls = sitemapData.map((item) => item.url);
 
     if (urls.length === 0) {
@@ -56,7 +56,7 @@ async function main() {
     const client = new GoogleIndexingClient({
       clientEmail: getClientEmail(),
       privateKey: getPrivateKey(),
-      baseUrl: siteConfig.url,
+      baseUrl: env.NEXT_PUBLIC_SITE_URL,
     });
 
     await client.initialize();
