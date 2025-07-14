@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { useSiteConfig } from "@/lib/hooks/use-site-config";
@@ -28,7 +29,7 @@ export function Header() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 0);
+      setIsScrolled(window.scrollY > 10);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -39,33 +40,111 @@ export function Header() {
     setIsMenuOpen(false);
   }, [pathname]);
 
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (isMenuOpen) setIsMenuOpen(false);
+    };
+
+    if (isMenuOpen) {
+      document.addEventListener("click", handleClickOutside);
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+      document.body.style.overflow = "";
+    };
+  }, [isMenuOpen]);
+
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
-        isScrolled && "shadow-sm"
+        "sticky top-0 z-50 w-full transition-all duration-200",
+        isScrolled
+          ? "bg-background/95 backdrop-blur-sm border-b border-border shadow-sm"
+          : "bg-background border-b border-transparent"
       )}
     >
-      <nav className="container flex h-16 items-center justify-between">
-        <div className="flex items-center space-x-8">
+      <nav className="container">
+        <div className="flex h-16 items-center justify-between">
+          {/* Site Title - Left Side */}
           <Link
             href="/"
-            className="flex items-center space-x-2 font-bold text-xl hover:opacity-80 transition-opacity"
+            className="flex items-center space-x-3 font-bold text-xl hover:opacity-90 transition-opacity"
           >
-            <span>{siteConfig.name}</span>
+            <Image
+              src="/site-wave-logo.png"
+              alt="Site Wave Logo"
+              width={32}
+              height={32}
+              className="h-8 w-auto"
+            />
+            <span className="bg-gradient-to-r from-ocean-blue to-coral-orange bg-clip-text text-transparent font-heading">
+              {siteConfig.name}
+            </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
+          {/* Desktop Navigation - Right Side */}
+          <div className="hidden md:flex items-center space-x-1">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "text-sm font-medium transition-colors hover:text-primary",
+                  "px-4 py-2 text-sm font-medium transition-colors rounded-lg",
                   pathname === item.href
-                    ? "text-foreground"
-                    : "text-muted-foreground"
+                    ? "bg-ocean-blue text-white"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsMenuOpen(!isMenuOpen);
+            }}
+            className={cn(
+              "md:hidden p-2 rounded-lg transition-colors",
+              isMenuOpen
+                ? "bg-coral-orange text-white"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            )}
+            aria-label="Toggle menu"
+            aria-expanded={isMenuOpen}
+          >
+            {isMenuOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
+          </button>
+        </div>
+
+        {/* Mobile Navigation */}
+        <div
+          className={cn(
+            "md:hidden overflow-hidden transition-all duration-300 ease-in-out",
+            isMenuOpen ? "max-h-80 border-t border-border" : "max-h-0"
+          )}
+        >
+          <div className="py-4 space-y-1">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "block px-4 py-3 text-base font-medium rounded-lg transition-colors",
+                  pathname === item.href
+                    ? "bg-ocean-blue text-white"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
                 {item.label}
@@ -73,45 +152,7 @@ export function Header() {
             ))}
           </div>
         </div>
-
-        {/* Mobile Menu Button */}
-        <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="md:hidden p-2 hover:bg-accent rounded-md transition-colors"
-          aria-label="Toggle menu"
-        >
-          {isMenuOpen ? (
-            <X className="h-5 w-5" />
-          ) : (
-            <Menu className="h-5 w-5" />
-          )}
-        </button>
       </nav>
-
-      {/* Mobile Navigation */}
-      <div
-        className={cn(
-          "md:hidden overflow-hidden transition-all duration-300 ease-in-out",
-          isMenuOpen ? "max-h-64" : "max-h-0"
-        )}
-      >
-        <div className="container py-4 space-y-2">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "block px-4 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent",
-                pathname === item.href
-                  ? "bg-accent text-foreground"
-                  : "text-muted-foreground"
-              )}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </div>
-      </div>
     </header>
   );
 }
