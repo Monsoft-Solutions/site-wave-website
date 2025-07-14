@@ -2,8 +2,9 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, MapPin, Phone, Mail, Waves } from "lucide-react";
+import { ArrowRight, MapPin, Waves } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { trackEvent } from "@/lib/utils/analytics";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useInView } from "react-intersection-observer";
@@ -310,54 +311,24 @@ export function SiteWaveHeroSection() {
                   </Button>
                 </motion.div>
               </motion.div>
-
-              {/* Contact Info */}
-              <motion.div
-                className="mt-12 flex flex-col sm:flex-row gap-6 justify-center lg:justify-start text-muted-foreground"
-                variants={itemVariants}
-              >
-                <div className="flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-ocean-blue" />
-                  <span className="text-sm">
-                    Ready to chat? Let&apos;s connect
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-coral-orange" />
-                  <span className="text-sm">Get started at sitewavefl.com</span>
-                </div>
-              </motion.div>
             </motion.div>
 
             {/* Visual Element */}
             <motion.div
-              className="relative lg:block hidden"
+              className="relative"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1, delay: 1 }}
             >
-              <div className="relative w-full h-96 bg-coastal-gradient rounded-3xl p-8 coastal-card">
-                <div className="absolute inset-0 bg-gradient-to-br from-ocean-blue/10 to-coral-orange/10 rounded-3xl"></div>
-                <div className="relative z-10 h-full flex flex-col justify-center items-center text-center">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{
-                      duration: 20,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                    className="mb-6"
-                  >
-                    <Waves className="w-20 h-20 text-white" />
-                  </motion.div>
-                  <h3 className="text-2xl font-bold font-heading text-white mb-4">
-                    Local-Focused
-                  </h3>
-                  <p className="text-white/90 text-lg">
-                    We understand the unique needs of Southwest Florida
-                    businesses
-                  </p>
-                </div>
+              <div className="relative w-full h-64 sm:h-80 lg:h-96 rounded-3xl overflow-hidden coastal-card">
+                <Image
+                  src="/images/site-wave-hero-image.png"
+                  alt="Site Wave - Southwest Florida Web Design and Digital Marketing"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  priority
+                />
               </div>
             </motion.div>
           </div>
