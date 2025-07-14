@@ -19,6 +19,7 @@ import {
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
+import { useContactInfo } from "@/lib/hooks/use-site-config";
 
 interface CtaOption {
   icon: React.ComponentType<{ className?: string }>;
@@ -80,6 +81,9 @@ export function AboutCtaSection() {
     threshold: 0.1,
     triggerOnce: true,
   });
+
+  // Get contact info from site config
+  const { phoneHref, formattedPhone, emailHref, email } = useContactInfo();
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -320,7 +324,7 @@ export function AboutCtaSection() {
                         className="border-blue-600 text-blue-600 hover:bg-blue-50 text-sm md:text-base"
                         asChild
                       >
-                        <Link href="tel:+1234567890">(239) 555-WAVE</Link>
+                        <Link href={phoneHref}>{formattedPhone}</Link>
                       </Button>
                     </div>
 
@@ -339,9 +343,7 @@ export function AboutCtaSection() {
                         className="border-orange-600 text-orange-600 hover:bg-orange-50 text-sm md:text-base"
                         asChild
                       >
-                        <Link href="mailto:hello@sitewavefl.com">
-                          hello@sitewavefl.com
-                        </Link>
+                        <Link href={emailHref}>{email}</Link>
                       </Button>
                     </div>
                   </div>

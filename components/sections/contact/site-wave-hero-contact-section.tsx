@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { useContactInfo } from "@/lib/hooks/use-site-config";
 
 // Floating Wave Component for coastal theme
 const FloatingWave = ({
@@ -57,46 +58,6 @@ const FloatingWave = ({
   </motion.div>
 );
 
-// Quick contact methods
-const contactMethods = [
-  {
-    icon: Phone,
-    title: "Call Us",
-    description: "Speak directly with our team",
-    action: "tel:+1-239-555-0123",
-    label: "(239) 555-0123",
-    color: "ocean-blue",
-    availability: "Mon-Fri 9AM-6PM EST",
-  },
-  {
-    icon: Mail,
-    title: "Email Us",
-    description: "Send us a detailed message",
-    action: "mailto:hello@sitewavefl.com",
-    label: "hello@sitewavefl.com",
-    color: "coral-orange",
-    availability: "24/7 Response",
-  },
-  {
-    icon: MessageCircle,
-    title: "Live Chat",
-    description: "Quick questions & instant answers",
-    action: "#contact-form",
-    label: "Start Chat",
-    color: "ocean-blue",
-    availability: "Business Hours",
-  },
-  {
-    icon: Calendar,
-    title: "Book Meeting",
-    description: "Schedule your free consultation",
-    action: "#contact-form",
-    label: "Free Consultation",
-    color: "coral-orange",
-    availability: "Same Week",
-  },
-];
-
 // Southwest Florida locations we serve
 const serviceLocations = [
   "Cape Coral",
@@ -127,6 +88,49 @@ export function SiteWaveHeroContactSection() {
 
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 500], [0, -150]);
+
+  // Get contact info from site config
+  const { email, phoneHref, formattedPhone, emailHref } = useContactInfo();
+
+  // Contact methods with dynamic values
+  const contactMethods = [
+    {
+      icon: Phone,
+      title: "Call Us",
+      description: "Speak directly with our team",
+      action: phoneHref,
+      label: formattedPhone,
+      color: "ocean-blue",
+      availability: "Mon-Fri 9AM-6PM EST",
+    },
+    {
+      icon: Mail,
+      title: "Email Us",
+      description: "Send us a detailed message",
+      action: emailHref,
+      label: email,
+      color: "coral-orange",
+      availability: "24/7 Response",
+    },
+    {
+      icon: MessageCircle,
+      title: "Live Chat",
+      description: "Quick questions & instant answers",
+      action: "#contact-form",
+      label: "Start Chat",
+      color: "ocean-blue",
+      availability: "Business Hours",
+    },
+    {
+      icon: Calendar,
+      title: "Book Meeting",
+      description: "Schedule your free consultation",
+      action: "#contact-form",
+      label: "Free Consultation",
+      color: "coral-orange",
+      availability: "Same Week",
+    },
+  ];
 
   // Update time and business hours status
   useEffect(() => {

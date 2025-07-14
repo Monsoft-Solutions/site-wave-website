@@ -15,6 +15,7 @@ export type ClientSiteConfig = {
   creator: {
     name: string;
     email: string;
+    phone?: string;
     twitter?: string;
     url?: string;
   };
@@ -50,6 +51,7 @@ const defaultConfig: ClientSiteConfig = {
   creator: {
     name: "Site Wave by Monsoft Solutions",
     email: "hello@sitewavefl.com",
+    phone: "(305) 797-4357",
     twitter: "@sitewavefl",
     url: "https://sitewavefl.com",
   },
@@ -130,5 +132,22 @@ export function useSiteConfig() {
       // Re-trigger the fetch by changing a dependency
       window.location.reload();
     },
+  };
+}
+
+/**
+ * Hook to get contact information from site config
+ * Returns email, phone, and formatted contact details
+ */
+export function useContactInfo() {
+  const { config } = useSiteConfig();
+
+  return {
+    email: config.creator.email,
+    phone: config.creator.phone || "(305) 797-4357",
+    name: config.creator.name,
+    formattedPhone: config.creator.phone || "(305) 797-4357",
+    phoneHref: `tel:+1${(config.creator.phone || "3057974357").replace(/\D/g, "")}`,
+    emailHref: `mailto:${config.creator.email}`,
   };
 }

@@ -19,10 +19,11 @@ const siteConfigData: NewSiteConfig = {
     instagram: "https://instagram.com/sitewave.fl",
   },
   creator: {
-    name: "Site Wave",
-    email: "contact@sitewavefl.com",
+    name: "Site Wave by Monsoft Solutions",
+    email: "hello@sitewavefl.com",
+    phone: "(305) 797-4357",
     twitter: "@sitewavefl",
-    url: "https://www.sitewavefl.com",
+    url: "https://sitewavefl.com",
   },
   keywords: [
     "website development",

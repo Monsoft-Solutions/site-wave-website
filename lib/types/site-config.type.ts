@@ -24,6 +24,7 @@ export type SiteConfigData = {
   creator: {
     name: string;
     email: string;
+    phone?: string;
     twitter?: string;
     url?: string;
   };

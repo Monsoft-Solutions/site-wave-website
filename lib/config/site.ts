@@ -22,6 +22,7 @@ export const siteConfig = {
   creator: {
     name: "Site Wave by Monsoft Solutions",
     email: "hello@sitewavefl.com",
+    phone: "(305) 797-4357",
     twitter: "@sitewavefl",
     url: "https://sitewavefl.com",
   },

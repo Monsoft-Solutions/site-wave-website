@@ -33,6 +33,7 @@ export const siteConfigs = pgTable("site_configs", {
   creator: jsonb("creator").notNull().$type<{
     name: string;
     email: string;
+    phone?: string;
     twitter?: string;
     url?: string;
   }>(),

@@ -33,6 +33,7 @@ const siteConfigSchema = z.object({
   creator: z.object({
     name: z.string().min(1, "Creator name is required"),
     email: z.string().email("Valid email is required"),
+    phone: z.string().optional(),
     twitter: z.string().optional(),
     url: z.string().url().optional().or(z.literal("")),
   }),
@@ -107,6 +108,7 @@ export default function SettingsPage() {
       creator: {
         name: "",
         email: "",
+        phone: "",
         twitter: "",
         url: "",
       },
@@ -370,6 +372,15 @@ export default function SettingsPage() {
                       {form.formState.errors.creator.email.message}
                     </p>
                   )}
+                </div>
+                <div>
+                  <Label htmlFor="creatorPhone">Creator Phone</Label>
+                  <Input
+                    id="creatorPhone"
+                    type="tel"
+                    {...form.register("creator.phone")}
+                    placeholder="(305) 797-4357"
+                  />
                 </div>
                 <div>
                   <Label htmlFor="creatorTwitter">Creator Twitter</Label>

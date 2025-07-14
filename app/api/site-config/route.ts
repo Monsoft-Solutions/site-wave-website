@@ -43,6 +43,7 @@ export async function GET() {
       creator: {
         name: "Your Name",
         email: "contact@yoursite.com",
+        phone: "(305) 797-4357",
         twitter: "@yourhandle",
         url: "https://yoursite.com",
       },

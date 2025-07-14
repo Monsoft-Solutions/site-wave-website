@@ -17,6 +17,7 @@ import {
   Target,
   Sparkles,
 } from "lucide-react";
+import { useContactInfo } from "@/lib/hooks/use-site-config";
 
 interface ServiceCtaSectionProps {
   serviceTitle: string;
@@ -33,6 +34,9 @@ export function ServiceCtaSection({ serviceTitle }: ServiceCtaSectionProps) {
     threshold: 0.3,
     triggerOnce: true,
   });
+
+  // Get contact info from site config
+  const { phoneHref, formattedPhone, emailHref, email } = useContactInfo();
 
   const backgroundY = useTransform(scrollYProgress, [0, 1], [0, -50]);
   const scaleProgress = useTransform(
@@ -323,11 +327,11 @@ export function ServiceCtaSection({ serviceTitle }: ServiceCtaSectionProps) {
                   Speak directly with our experts
                 </p>
                 <motion.a
-                  href="tel:+1234567890"
+                  href={phoneHref}
                   className="inline-block mt-3 text-primary font-medium hover:underline"
                   whileHover={{ scale: 1.05 }}
                 >
-                  +1 (234) 567-8900
+                  {formattedPhone}
                 </motion.a>
               </motion.div>
             </motion.div>
@@ -358,11 +362,11 @@ export function ServiceCtaSection({ serviceTitle }: ServiceCtaSectionProps) {
                   Get detailed project information
                 </p>
                 <motion.a
-                  href="mailto:hello@sitewave.com"
+                  href={emailHref}
                   className="inline-block mt-3 text-primary font-medium hover:underline"
                   whileHover={{ scale: 1.05 }}
                 >
-                  hello@sitewave.com
+                  {email}
                 </motion.a>
               </motion.div>
             </motion.div>

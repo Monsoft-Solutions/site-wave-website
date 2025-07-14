@@ -132,3 +132,20 @@ export const getEnhancedSiteConfig = async () => {
     },
   };
 };
+
+/**
+ * Get contact information from site config
+ * Server-side utility for getting contact details
+ */
+export const getContactInfo = async () => {
+  const config = await getSiteConfigWithDefaults();
+
+  return {
+    email: config.creator.email,
+    phone: config.creator.phone || "(305) 797-4357",
+    name: config.creator.name,
+    formattedPhone: config.creator.phone || "(305) 797-4357",
+    phoneHref: `tel:+1${(config.creator.phone || "3057974357").replace(/\D/g, "")}`,
+    emailHref: `mailto:${config.creator.email}`,
+  };
+};

@@ -14,7 +14,9 @@ import {
   MessageSquare,
   CheckCircle,
   ArrowRight,
+  Phone,
 } from "lucide-react";
+import { useContactInfo } from "@/lib/hooks/use-site-config";
 
 // FAQ categories and questions specific to Site Wave
 const faqData = [
@@ -145,6 +147,8 @@ const faqData = [
 export function SiteWaveContactFaq() {
   const [activeCategory, setActiveCategory] = useState("services");
   const [openQuestion, setOpenQuestion] = useState<string | null>(null);
+  // Get contact info from site config
+  const { phoneHref, formattedPhone } = useContactInfo();
 
   const activeCategoryData = faqData.find((item) => item.id === activeCategory);
 
@@ -323,12 +327,10 @@ export function SiteWaveContactFaq() {
                     size="lg"
                     variant="outline"
                     className="border-ocean-blue/30 text-ocean-blue hover:bg-ocean-blue/5"
-                    onClick={() =>
-                      (window.location.href = "tel:+1-239-555-0123")
-                    }
+                    onClick={() => (window.location.href = phoneHref)}
                   >
-                    <MessageSquare className="w-4 h-4 mr-2" />
-                    Call (239) 555-0123
+                    <Phone className="w-4 h-4 mr-2" />
+                    {formattedPhone}
                   </Button>
                 </div>
 

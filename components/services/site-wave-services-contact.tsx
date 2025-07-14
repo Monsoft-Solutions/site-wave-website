@@ -14,48 +14,52 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-
-const contactMethods = [
-  {
-    icon: Phone,
-    title: "Call Us Today",
-    description: "Ready to chat? We&apos;re here to help you succeed",
-    action: "Call Now",
-    href: "tel:+1-239-555-0123",
-    color: "ocean-blue",
-  },
-  {
-    icon: Mail,
-    title: "Get Started Online",
-    description: "Visit sitewavefl.com and tell us about your project",
-    action: "Send Message",
-    href: "/contact",
-    color: "coral-orange",
-  },
-  {
-    icon: Calendar,
-    title: "Free Consultation",
-    description: "No obligation meeting to discuss your needs",
-    action: "Book Meeting",
-    href: "/contact",
-    color: "ocean-blue",
-  },
-];
-
-const benefits = [
-  "Free initial consultation",
-  "Custom solutions for your business",
-  "Local Southwest Florida expertise",
-  "No obligation quote",
-  "Fast response time",
-  "Dedicated project manager",
-];
+import { useContactInfo } from "@/lib/hooks/use-site-config";
 
 export function SiteWaveServicesContact() {
   const [ref, inView] = useInView({
-    threshold: 0.1,
     triggerOnce: true,
+    threshold: 0.1,
   });
+
+  // Get contact info from site config
+  const { phoneHref } = useContactInfo();
+
+  const contactMethods = [
+    {
+      icon: Phone,
+      title: "Call Us Today",
+      description: "Ready to chat? We're here to help you succeed",
+      action: "Call Now",
+      href: phoneHref,
+      color: "ocean-blue",
+    },
+    {
+      icon: Mail,
+      title: "Get Started Online",
+      description: "Visit sitewavefl.com and tell us about your project",
+      action: "Send Message",
+      href: "/contact",
+      color: "coral-orange",
+    },
+    {
+      icon: Calendar,
+      title: "Free Consultation",
+      description: "No obligation meeting to discuss your needs",
+      action: "Book Meeting",
+      href: "/contact",
+      color: "ocean-blue",
+    },
+  ];
+
+  const benefits = [
+    "Free initial consultation",
+    "Custom solutions for your business",
+    "Local Southwest Florida expertise",
+    "No obligation quote",
+    "Fast response time",
+    "Dedicated project manager",
+  ];
 
   const containerVariants = {
     hidden: { opacity: 0 },

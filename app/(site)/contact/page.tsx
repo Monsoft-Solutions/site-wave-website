@@ -33,12 +33,12 @@ export default function ContactPage() {
           description:
             "Site Wave by Monsoft Solutions provides website development, SEO, digital marketing, and business automation services for small businesses in Southwest Florida.",
           url: "https://sitewavefl.com",
-          telephone: "+1-239-555-0123",
+          telephone: "+1-305-797-4357",
           email: "hello@sitewavefl.com",
           contactPoint: [
             {
               "@type": "ContactPoint",
-              telephone: "+1-239-555-0123",
+              telephone: "+1-305-797-4357",
               contactType: "customer service",
               availableLanguage: ["English"],
               areaServed: [

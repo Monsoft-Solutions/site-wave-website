@@ -194,7 +194,7 @@ export default function NotFound() {
                 </Link>
               </Button>
               <Button variant="outline" asChild>
-                <a href="tel:+15551234567">
+                <a href="tel:+13057974357">
                   <Phone className="mr-2 h-4 w-4" />
                   Call Us
                 </a>
