@@ -9,7 +9,7 @@ const client = postgres(env.DATABASE_URL, {
   idle_timeout: 20, // Close connections after 20 seconds of inactivity
   connect_timeout: 10, // Connection timeout in seconds
   prepare: false, // Disable prepared statements for serverless compatibility
-  debug: isDevelopment, // Log connection info in development
+  debug: false, // Log connection info in development
   onnotice: isDevelopment ? console.log : undefined, // Log notices in development
 });
 
