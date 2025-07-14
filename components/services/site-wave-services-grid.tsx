@@ -104,7 +104,6 @@ export function SiteWaveServicesGrid({
       filteredServices = services.filter(
         (service) => service.category === selectedCategory
       );
-      setViewMode("category");
       return {
         services: filteredServices,
         totalPages: Math.ceil(filteredServices.length / SERVICES_PER_PAGE),
@@ -162,6 +161,8 @@ export function SiteWaveServicesGrid({
     setCurrentPage(1);
     if (category === null) {
       setViewMode("featured");
+    } else {
+      setViewMode("category");
     }
   };
 
