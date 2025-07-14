@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/forms/FormField";
 import { LoadingSpinner } from "@/components/layout/Loading";
 import {
@@ -30,6 +31,15 @@ import {
   Briefcase,
   FileText,
   Heart,
+  Search,
+  X,
+  Star,
+  Globe,
+  Smartphone,
+  TrendingUp,
+  Bot,
+  Palette,
+  Zap,
 } from "lucide-react";
 
 // Form configuration constants
@@ -37,6 +47,7 @@ const FORM_CONFIG = {
   TOTAL_STEPS: 4,
   ANIMATION_DURATION: 0.3,
   PROGRESS_TRANSITION_DURATION: 0.5,
+  FEATURED_SERVICES_COUNT: 6,
 } as const;
 
 // HTTP status codes
@@ -78,6 +89,8 @@ type TimelineId =
   | "6-12-months"
   | "flexible";
 
+type ServiceViewMode = "featured" | "all" | "category";
+
 interface BudgetRange {
   id: BudgetId;
   label: string;
@@ -98,6 +111,43 @@ const categoryIcons: Record<string, string> = {
   Marketing: "📈",
   Support: "🛠️",
 };
+
+// Icon mapping for services (matching site-wave-services-grid.tsx)
+const serviceIcons = {
+  "Website Development": Globe,
+  SEO: Search,
+  "Digital Marketing": Smartphone,
+  Analytics: TrendingUp,
+  Automation: Bot,
+  Design: Palette,
+  "Local SEO": Search,
+  "Business Automation": Bot,
+  "E-commerce": Globe,
+  "Content Strategy": TrendingUp,
+  "Social Media": Smartphone,
+  "Review Management": Star,
+  Hosting: Globe,
+  CRM: Bot,
+  "Lead Management": Zap,
+  "Marketing Automation": Bot,
+  Integration: Zap,
+  "Print Design": Palette,
+  Advertising: Smartphone,
+  "Custom Signage": Palette,
+  Presentations: Palette,
+  "Directory Optimization": Search,
+  default: Globe,
+};
+
+// Featured service titles (matching site-wave-services-grid.tsx)
+const FEATURED_SERVICES = [
+  "Custom Website Development",
+  "Website Redesign & Optimization",
+  "Local SEO Optimization",
+  "E-commerce Solutions",
+  "Google Business Profile Management",
+  "Social Media Setup & Content",
+];
 
 // Budget ranges
 const budgetRanges: BudgetRange[] = [
@@ -129,6 +179,11 @@ export function EnhancedContactForm(): React.JSX.Element {
   const [selectedBudget, setSelectedBudget] = useState<BudgetId | "">("");
   const [selectedTimeline, setSelectedTimeline] = useState<TimelineId | "">("");
 
+  // Service filtering states
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ServiceViewMode>("featured");
+
   // Fetch services from database
   const {
     data: services,
@@ -148,6 +203,72 @@ export function EnhancedContactForm(): React.JSX.Element {
     mode: "onChange",
   });
 
+  // Extract unique categories from services
+  const categories = useMemo(() => {
+    if (!services) return [];
+    return Array.from(new Set(services.map((service) => service.category)));
+  }, [services]);
+
+  // Smart filtering logic for services
+  const filteredServices = useMemo(() => {
+    if (!services) return { services: [], isComplete: true, remainingCount: 0 };
+
+    let filtered = services;
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (service) =>
+          service.title.toLowerCase().includes(query) ||
+          service.shortDescription.toLowerCase().includes(query) ||
+          service.category.toLowerCase().includes(query)
+      );
+    }
+
+    // Apply category filter
+    if (selectedCategory) {
+      filtered = filtered.filter(
+        (service) => service.category === selectedCategory
+      );
+    }
+
+    // Apply view mode logic
+    if (!selectedCategory && viewMode === "featured" && !searchQuery.trim()) {
+      // Show featured services first
+      const featuredServices = filtered.filter((service) =>
+        FEATURED_SERVICES.includes(service.title)
+      );
+      const remainingServices = filtered.filter(
+        (service) => !FEATURED_SERVICES.includes(service.title)
+      );
+
+      // Combine featured + some remaining to reach FEATURED_SERVICES_COUNT
+      const displayServices = [
+        ...featuredServices,
+        ...remainingServices.slice(
+          0,
+          Math.max(
+            0,
+            FORM_CONFIG.FEATURED_SERVICES_COUNT - featuredServices.length
+          )
+        ),
+      ].slice(0, FORM_CONFIG.FEATURED_SERVICES_COUNT);
+
+      return {
+        services: displayServices,
+        isComplete: false,
+        remainingCount: services.length - displayServices.length,
+      };
+    }
+
+    return {
+      services: filtered,
+      isComplete: true,
+      remainingCount: 0,
+    };
+  }, [services, searchQuery, selectedCategory, viewMode]);
+
   // Track form start when user first interacts with any field
   useEffect(() => {
     const subscription = form.watch(() => {
@@ -158,6 +279,57 @@ export function EnhancedContactForm(): React.JSX.Element {
     });
     return () => subscription.unsubscribe();
   }, [form, hasStartedForm]);
+
+  /**
+   * Get the icon for a service
+   */
+  const getServiceIcon = (title: string, category: string) => {
+    const key = title as keyof typeof serviceIcons;
+    const categoryKey = category as keyof typeof serviceIcons;
+    return (
+      serviceIcons[key] || serviceIcons[categoryKey] || serviceIcons.default
+    );
+  };
+
+  /**
+   * Check if a service is featured/popular
+   */
+  const isServicePopular = (service: ServiceWithRelations): boolean => {
+    return (
+      service.title.includes("Website") ||
+      service.title.includes("SEO") ||
+      FEATURED_SERVICES.includes(service.title)
+    );
+  };
+
+  /**
+   * Handle category filter change
+   */
+  const handleCategoryChange = (category: string | null) => {
+    setSelectedCategory(category);
+    if (category === null) {
+      setViewMode("featured");
+    } else {
+      setViewMode("category");
+    }
+  };
+
+  /**
+   * Handle view all services
+   */
+  const handleViewAllServices = () => {
+    setViewMode("all");
+    setSelectedCategory(null);
+  };
+
+  /**
+   * Clear search and filters
+   */
+  const clearFilters = () => {
+    setSearchQuery("");
+    setSelectedCategory(null);
+    setViewMode("featured");
+  };
 
   /**
    * Navigate to next step
@@ -240,6 +412,7 @@ export function EnhancedContactForm(): React.JSX.Element {
       setSelectedServiceId("");
       setSelectedBudget("");
       setSelectedTimeline("");
+      clearFilters();
     } catch (error) {
       console.error("Contact form error:", error);
 
@@ -345,7 +518,7 @@ export function EnhancedContactForm(): React.JSX.Element {
               <FormProvider {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)}>
                   <AnimatePresence mode="wait">
-                    {/* Step 1: Project Type */}
+                    {/* Step 1: Project Type with Enhanced Filtering */}
                     {currentStep === 1 && (
                       <motion.div
                         key="step1"
@@ -380,38 +553,248 @@ export function EnhancedContactForm(): React.JSX.Element {
                             </p>
                           </div>
                         ) : (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {services.map((service: ServiceWithRelations) => (
-                              <motion.div
-                                key={service.id}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                className={`relative p-4 border-2 rounded-2xl cursor-pointer transition-all ${
-                                  selectedServiceId === service.id
-                                    ? "border-primary bg-primary/5"
-                                    : "border-border hover:border-primary/50"
-                                }`}
-                                onClick={() => setSelectedServiceId(service.id)}
-                              >
-                                <div className="flex items-start space-x-3">
-                                  <span className="text-2xl">
-                                    {categoryIcons[service.category] || "🔧"}
-                                  </span>
-                                  <div>
-                                    <h4 className="font-medium">
-                                      {service.title}
-                                    </h4>
-                                    <p className="text-sm text-muted-foreground">
-                                      {service.shortDescription}
-                                    </p>
-                                  </div>
-                                </div>
-                                {selectedServiceId === service.id && (
-                                  <CheckCircle className="absolute top-4 right-4 w-5 h-5 text-primary" />
+                          <>
+                            {/* Search and Filter Section */}
+                            <div className="space-y-4 mb-8">
+                              {/* Search Bar */}
+                              <div className="relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                                <Input
+                                  type="text"
+                                  placeholder="Search services..."
+                                  value={searchQuery}
+                                  onChange={(e) =>
+                                    setSearchQuery(e.target.value)
+                                  }
+                                  className="pl-10 pr-10"
+                                />
+                                {searchQuery && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
+                                    onClick={() => setSearchQuery("")}
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </Button>
                                 )}
-                              </motion.div>
-                            ))}
-                          </div>
+                              </div>
+
+                              {/* Category Filters */}
+                              <div className="flex flex-wrap justify-center gap-2">
+                                <Badge
+                                  variant={
+                                    selectedCategory === null
+                                      ? "default"
+                                      : "secondary"
+                                  }
+                                  className={`cursor-pointer px-4 py-2 text-sm transition-all font-medium ${
+                                    selectedCategory === null
+                                      ? "bg-primary text-white hover:bg-primary/90"
+                                      : "bg-background hover:bg-primary/10 text-muted-foreground hover:text-primary"
+                                  }`}
+                                  onClick={() => handleCategoryChange(null)}
+                                >
+                                  All Services
+                                  {selectedCategory === null &&
+                                    viewMode === "featured" && (
+                                      <span className="ml-1 text-xs opacity-80">
+                                        (Featured)
+                                      </span>
+                                    )}
+                                </Badge>
+                                {categories.map((category: string) => (
+                                  <Badge
+                                    key={category}
+                                    variant={
+                                      selectedCategory === category
+                                        ? "default"
+                                        : "secondary"
+                                    }
+                                    className={`cursor-pointer px-4 py-2 text-sm transition-all font-medium ${
+                                      selectedCategory === category
+                                        ? "bg-primary text-white hover:bg-primary/90"
+                                        : "bg-background hover:bg-primary/10 text-muted-foreground hover:text-primary"
+                                    }`}
+                                    onClick={() =>
+                                      handleCategoryChange(category)
+                                    }
+                                  >
+                                    <span className="mr-1">
+                                      {categoryIcons[category] || "🔧"}
+                                    </span>
+                                    {category}
+                                  </Badge>
+                                ))}
+                              </div>
+
+                              {/* Results Count */}
+                              <div className="flex justify-between items-center text-sm text-muted-foreground">
+                                <span>
+                                  {searchQuery.trim() ? (
+                                    `Found ${filteredServices.services.length} service${filteredServices.services.length !== 1 ? "s" : ""} for "${searchQuery}"`
+                                  ) : viewMode === "featured" &&
+                                    !selectedCategory ? (
+                                    <>
+                                      Showing {filteredServices.services.length}{" "}
+                                      featured services
+                                      {filteredServices.remainingCount > 0 && (
+                                        <span>
+                                          {" "}
+                                          • {
+                                            filteredServices.remainingCount
+                                          }{" "}
+                                          more available
+                                        </span>
+                                      )}
+                                    </>
+                                  ) : (
+                                    `Showing ${filteredServices.services.length} service${filteredServices.services.length !== 1 ? "s" : ""}`
+                                  )}
+                                </span>
+
+                                {(searchQuery.trim() || selectedCategory) && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={clearFilters}
+                                    className="gap-1 text-primary hover:text-primary hover:bg-primary/10"
+                                  >
+                                    <X className="w-3 h-3" />
+                                    Clear filters
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Services Grid */}
+                            {filteredServices.services.length > 0 ? (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {filteredServices.services.map(
+                                  (service: ServiceWithRelations) => {
+                                    const ServiceIcon = getServiceIcon(
+                                      service.title,
+                                      service.category
+                                    );
+                                    const isPopular = isServicePopular(service);
+
+                                    return (
+                                      <motion.div
+                                        key={service.id}
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        className={`relative p-4 border-2 rounded-2xl cursor-pointer transition-all ${
+                                          selectedServiceId === service.id
+                                            ? "border-primary bg-primary/5"
+                                            : isPopular
+                                              ? "border-primary/30 bg-primary/5 hover:border-primary/50"
+                                              : "border-border hover:border-primary/50"
+                                        }`}
+                                        onClick={() =>
+                                          setSelectedServiceId(service.id)
+                                        }
+                                      >
+                                        {isPopular &&
+                                          selectedServiceId !== service.id && (
+                                            <div className="absolute -top-2 right-2 z-10">
+                                              <Badge
+                                                variant="secondary"
+                                                className="bg-orange-100 text-orange-600 border-orange-200 text-xs"
+                                              >
+                                                Popular
+                                              </Badge>
+                                            </div>
+                                          )}
+
+                                        <div className="flex items-start space-x-3">
+                                          <div
+                                            className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                                              isPopular
+                                                ? "bg-primary text-white"
+                                                : "bg-primary/10 text-primary"
+                                            }`}
+                                          >
+                                            <ServiceIcon className="w-5 h-5" />
+                                          </div>
+                                          <div className="flex-1 min-w-0">
+                                            <h4 className="font-medium text-foreground mb-1">
+                                              {service.title}
+                                            </h4>
+                                            <p className="text-sm text-muted-foreground line-clamp-2">
+                                              {service.shortDescription}
+                                            </p>
+                                            <div className="flex items-center gap-2 mt-2">
+                                              <Badge
+                                                variant="outline"
+                                                className="text-xs"
+                                              >
+                                                {service.category}
+                                              </Badge>
+                                              {service.pricing?.[0]?.price && (
+                                                <span className="text-xs text-muted-foreground">
+                                                  From{" "}
+                                                  {service.pricing[0].price}
+                                                </span>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+                                        {selectedServiceId === service.id && (
+                                          <CheckCircle className="absolute top-4 right-4 w-5 h-5 text-primary" />
+                                        )}
+                                      </motion.div>
+                                    );
+                                  }
+                                )}
+                              </div>
+                            ) : (
+                              /* No Services Found */
+                              <div className="text-center py-8">
+                                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                                  <Search className="w-8 h-8 text-muted-foreground" />
+                                </div>
+                                <h4 className="font-medium mb-2">
+                                  No services found
+                                </h4>
+                                <p className="text-sm text-muted-foreground mb-4">
+                                  {searchQuery.trim()
+                                    ? `No services match "${searchQuery}". Try a different search term or browse by category.`
+                                    : selectedCategory
+                                      ? `No services found in the ${selectedCategory} category.`
+                                      : "No services are currently available."}
+                                </p>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={clearFilters}
+                                  className="gap-2"
+                                >
+                                  View All Services
+                                </Button>
+                              </div>
+                            )}
+
+                            {/* View All Services Button for Featured Mode */}
+                            {!selectedCategory &&
+                              viewMode === "featured" &&
+                              !searchQuery.trim() &&
+                              filteredServices.remainingCount > 0 && (
+                                <div className="text-center mt-6">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={handleViewAllServices}
+                                    className="gap-2"
+                                  >
+                                    View All {services?.length || 0} Services
+                                    <ArrowRight className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              )}
+                          </>
                         )}
                       </motion.div>
                     )}
