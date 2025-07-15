@@ -12,53 +12,18 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { LoadingSpinner } from "@/components/layout/Loading";
 import { Send, CheckCircle, ArrowRight } from "lucide-react";
-import { z } from "zod";
 import { analytics } from "@/lib/utils/analytics";
-
-// Validation schema for marketing contact form (updated to match API endpoint)
-const marketingContactSchema = z.object({
-  name: z
-    .string()
-    .min(2, "Name must be at least 2 characters")
-    .max(50, "Name must be less than 50 characters"),
-  email: z.string().email("Please enter a valid email address"),
-  phone: z
-    .string()
-    .min(10, "Please enter a valid phone number")
-    .regex(/^[\+]?[1-9][\d]{0,15}$/, "Please enter a valid phone number"),
-  company: z
-    .string()
-    .min(2, "Company name must be at least 2 characters")
-    .max(100, "Company name must be less than 100 characters"),
-  website: z
-    .string()
-    .url("Please enter a valid website URL")
-    .optional()
-    .or(z.literal("")),
-  subject: z
-    .string()
-    .min(2, "Subject must be at least 2 characters")
-    .max(100, "Subject must be less than 100 characters"),
-  message: z
-    .string()
-    .min(10, "Message must be at least 10 characters")
-    .max(1000, "Message must be less than 1000 characters"),
-  timeline: z.enum(
-    ["asap", "1-3-months", "3-6-months", "6-plus-months", "exploring"],
-    {
-      required_error: "Please select your timeline",
-    }
-  ),
-});
-
-type MarketingContactData = z.infer<typeof marketingContactSchema>;
+import {
+  marketingContactFormSchema,
+  type MarketingContactFormData,
+} from "@/lib/utils/contact-form-validation";
 
 interface MarketingContactFormProps {
   location?: string;
   service?: string;
   price?: string;
   variant?: "default" | "compact" | "inline";
-  onSuccess?: (data: MarketingContactData) => void;
+  onSuccess?: (data: MarketingContactFormData) => void;
   className?: string;
 }
 
@@ -74,8 +39,8 @@ export function MarketingContactForm({
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [hasStartedForm, setHasStartedForm] = useState(false);
 
-  const form = useForm<MarketingContactData>({
-    resolver: zodResolver(marketingContactSchema),
+  const form = useForm<MarketingContactFormData>({
+    resolver: zodResolver(marketingContactFormSchema),
     defaultValues: {
       name: "",
       email: "",
@@ -85,6 +50,12 @@ export function MarketingContactForm({
       subject: `${service} Inquiry`,
       message: "",
       timeline: undefined,
+      // Metadata fields
+      serviceInterest: service,
+      location: location,
+      formType: "marketing-landing",
+      price: price,
+      sourcePageUrl: typeof window !== "undefined" ? window.location.href : "",
     },
   });
 
@@ -99,24 +70,28 @@ export function MarketingContactForm({
     return () => subscription.unsubscribe();
   }, [form, hasStartedForm]);
 
-  const onSubmit = async (data: MarketingContactData) => {
+  const onSubmit = async (data: MarketingContactFormData) => {
     setIsSubmitting(true);
     analytics.trackContact.formSubmit();
 
     try {
-      // Prepare submission data to match the enhanced contact form API structure
-      const submissionData = {
+      // Prepare submission data with clean message and separate metadata
+      const submissionData: MarketingContactFormData = {
         name: data.name,
         email: data.email,
-        subject: data.subject,
-        message: `${data.message}\n\n--- Additional Information ---\nPhone: ${data.phone}\nCompany: ${data.company}\nWebsite: ${data.website || "Not provided"}\nService Interest: ${service}\nLocation: ${location}\nTimeline: ${data.timeline}\nSource: Marketing Landing Page`,
+        phone: data.phone,
         company: data.company,
+        website: data.website || "",
+        subject: data.subject,
+        message: data.message, // Clean message without metadata
         timeline: data.timeline,
-        // Add metadata for tracking
-        formType: "marketing-landing",
+        // Metadata fields
         serviceInterest: service,
         location: location,
+        formType: "marketing-landing",
         price: price,
+        sourcePageUrl:
+          typeof window !== "undefined" ? window.location.href : "",
       };
 
       const response = await fetch("/api/contact", {

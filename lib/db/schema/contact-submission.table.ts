@@ -11,7 +11,7 @@ import { submissionStatusEnum } from "@/lib/db/schema/enums/submission-status.en
 /**
  * Contact form submissions table for storing user inquiries
  * Tracks contact form data with metadata for administration
- * Extended to support enhanced form with project details
+ * Extended to support enhanced form with project details and marketing form data
  */
 export const contactSubmissions = pgTable("contact_submissions", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -25,6 +25,17 @@ export const contactSubmissions = pgTable("contact_submissions", {
   projectType: varchar("project_type", { length: 50 }),
   budget: varchar("budget", { length: 50 }),
   timeline: varchar("timeline", { length: 50 }),
+
+  // Marketing form fields
+  phone: varchar("phone", { length: 20 }),
+  website: varchar("website", { length: 500 }),
+  serviceInterest: varchar("service_interest", { length: 255 }),
+  location: varchar("location", { length: 255 }),
+  formType: varchar("form_type", { length: 50 }),
+  price: varchar("price", { length: 100 }),
+
+  // Tracking fields
+  sourcePageUrl: varchar("source_page_url", { length: 500 }),
 
   // System fields
   status: submissionStatusEnum("status").notNull().default("new"),

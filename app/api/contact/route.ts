@@ -5,7 +5,10 @@ import { contactSubmissions } from "@/lib/db/schema/contact-submission.table";
 import {
   contactFormSchema,
   enhancedContactFormSchema,
+  marketingContactFormSchema,
+  type ContactFormData,
   type EnhancedContactFormData,
+  type MarketingContactFormData,
 } from "@/lib/utils/contact-form-validation";
 import { ApiResponse } from "@/lib/types/api-response.type";
 import { ContactSubmissionResponse } from "@/lib/types/contact-submission.type";
@@ -113,35 +116,72 @@ export async function POST(request: NextRequest) {
     // Parse and validate request body
     const body = await request.json();
 
-    // Try enhanced schema first, fallback to basic schema for backward compatibility
-    let validationResult = enhancedContactFormSchema.safeParse(body);
-    let isEnhanced = true;
+    // Try schemas in order: marketing, enhanced, then basic for backward compatibility
+    let validatedData:
+      | MarketingContactFormData
+      | EnhancedContactFormData
+      | ContactFormData;
+    let formType: "marketing" | "enhanced" | "basic";
 
-    if (!validationResult.success) {
-      validationResult = contactFormSchema.safeParse(body);
-      isEnhanced = false;
+    const marketingResult = marketingContactFormSchema.safeParse(body);
+    if (marketingResult.success) {
+      validatedData = marketingResult.data;
+      formType = "marketing";
+    } else {
+      const enhancedResult = enhancedContactFormSchema.safeParse(body);
+      if (enhancedResult.success) {
+        validatedData = enhancedResult.data;
+        formType = "enhanced";
+      } else {
+        const basicResult = contactFormSchema.safeParse(body);
+        if (basicResult.success) {
+          validatedData = basicResult.data;
+          formType = "basic";
+        } else {
+          const response: ApiResponse<ContactSubmissionResponse> = {
+            success: false,
+            data: {} as ContactSubmissionResponse,
+            error: "Validation failed",
+            message: basicResult.error.errors.map((e) => e.message).join(", "),
+          };
+          return NextResponse.json(response, { status: 400 });
+        }
+      }
     }
 
-    if (!validationResult.success) {
-      const response: ApiResponse<ContactSubmissionResponse> = {
-        success: false,
-        data: {} as ContactSubmissionResponse,
-        error: "Validation failed",
-        message: validationResult.error.errors.map((e) => e.message).join(", "),
-      };
-      return NextResponse.json(response, { status: 400 });
+    const { name, email, subject, message } = validatedData;
+
+    // Extract form-specific fields
+    let company = null;
+    let projectType = null;
+    let budget = null;
+    let timeline = null;
+    let phone = null;
+    let website = null;
+    let serviceInterest = null;
+    let location = null;
+    let price = null;
+    let sourcePageUrl = null;
+
+    if (formType === "marketing") {
+      const marketingData = validatedData as MarketingContactFormData;
+      company = marketingData.company || null;
+      timeline = marketingData.timeline || null;
+      phone = marketingData.phone || null;
+      website = marketingData.website || null;
+      serviceInterest = marketingData.serviceInterest || null;
+      location = marketingData.location || null;
+      price = marketingData.price || null;
+      sourcePageUrl = marketingData.sourcePageUrl || null;
+    } else if (formType === "enhanced") {
+      const enhancedData = validatedData as EnhancedContactFormData;
+      company = enhancedData.company || null;
+      projectType = enhancedData.serviceId || null; // Store service ID in projectType field
+      budget = enhancedData.budget || null;
+      timeline = enhancedData.timeline || null;
+      serviceInterest = enhancedData.serviceInterest || null;
+      sourcePageUrl = enhancedData.sourcePageUrl || null;
     }
-
-    const { name, email, subject, message } = validationResult.data;
-
-    // Extract enhanced fields if available
-    const enhancedData = isEnhanced
-      ? (validationResult.data as EnhancedContactFormData)
-      : null;
-    const company = enhancedData?.company || null;
-    const projectType = enhancedData?.serviceId || null; // Store service ID in projectType field
-    const budget = enhancedData?.budget || null;
-    const timeline = enhancedData?.timeline || null;
 
     // Spam detection
     if (detectSpam({ name, email, message })) {
@@ -175,13 +215,22 @@ export async function POST(request: NextRequest) {
         projectType,
         budget,
         timeline,
+        phone,
+        website,
+        serviceInterest,
+        location,
+        formType,
+        price,
+        sourcePageUrl,
         ipAddress: clientIp !== "unknown" ? clientIp : null,
         userAgent,
         status: "new",
       })
       .returning({ id: contactSubmissions.id });
 
-    console.log(`New contact submission from ${email} (ID: ${submission.id})`);
+    console.log(
+      `New ${formType} contact submission from ${email} (ID: ${submission.id})`
+    );
 
     // Send confirmation email to user and notification to admins
     const emailPromises = [
@@ -219,7 +268,7 @@ export async function POST(request: NextRequest) {
         },
         {
           to: "hello@sitewavefl.com",
-          subject: "New contact form submission",
+          subject: `New ${formType} contact form submission`,
           from: "support@monsoftlabs.com",
         }
       ),

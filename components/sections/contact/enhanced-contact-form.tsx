@@ -201,6 +201,7 @@ export function EnhancedContactForm(): React.JSX.Element {
       subject: "",
       message: "",
       company: "",
+      phone: "",
     },
     mode: "onChange",
   });
@@ -359,11 +360,20 @@ export function EnhancedContactForm(): React.JSX.Element {
     analytics.trackContact.formSubmit();
 
     try {
+      // Get the selected service to extract the title
+      const selectedService = services?.find((s) => s.id === selectedServiceId);
+
       const submissionData = {
         ...data,
         serviceId: selectedServiceId,
         budget: selectedBudget,
         timeline: selectedTimeline,
+        // Add metadata fields
+        serviceInterest: selectedService?.title || null,
+        formType: "enhanced",
+        // Add source page URL for tracking
+        sourcePageUrl:
+          typeof window !== "undefined" ? window.location.href : "",
       };
 
       const response = await fetch("/api/contact", {
@@ -931,6 +941,12 @@ export function EnhancedContactForm(): React.JSX.Element {
                             type="email"
                             placeholder="john@example.com"
                             required
+                          />
+                          <FormField
+                            name="phone"
+                            label="Phone Number (Optional)"
+                            type="tel"
+                            placeholder="(555) 123-4567"
                           />
                         </div>
 
