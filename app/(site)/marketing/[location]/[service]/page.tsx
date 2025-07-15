@@ -34,8 +34,9 @@ function calculatePrice(
     return { originalPrice: basePrice, finalPrice: basePrice };
   }
 
-  // Extract numeric value from price string (e.g., "$2,999" -> 2999)
-  const numericPrice = parseFloat(basePrice.replace(/[$,]/g, ""));
+  // Extract numeric value from price string using more flexible regex
+  // Handles various currency symbols and formatting
+  const numericPrice = parseFloat(basePrice.replace(/[^\d.]/g, ""));
   const discountPercent = parseFloat(discount);
 
   if (
@@ -50,10 +51,17 @@ function calculatePrice(
   const discountAmount = (numericPrice * discountPercent) / 100;
   const finalPrice = numericPrice - discountAmount;
 
-  // Format prices back to currency strings
-  const formattedOriginal = `$${numericPrice.toLocaleString()}`;
-  const formattedFinal = `$${Math.round(finalPrice).toLocaleString()}`;
-  const formattedDiscount = `$${Math.round(discountAmount).toLocaleString()}`;
+  // Use Intl.NumberFormat for locale-aware currency formatting with proper decimal precision
+  const currencyFormatter = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+  const formattedOriginal = currencyFormatter.format(numericPrice);
+  const formattedFinal = currencyFormatter.format(finalPrice);
+  const formattedDiscount = currencyFormatter.format(discountAmount);
 
   return {
     originalPrice: formattedOriginal,
