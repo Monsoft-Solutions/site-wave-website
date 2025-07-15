@@ -5,6 +5,7 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -172,6 +173,7 @@ const timelineOptions: TimelineOption[] = [
  * Enhanced contact form with multi-step workflow
  */
 export function EnhancedContactForm(): React.JSX.Element {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [hasStartedForm, setHasStartedForm] = useState<boolean>(false);
@@ -413,6 +415,11 @@ export function EnhancedContactForm(): React.JSX.Element {
       setSelectedBudget("");
       setSelectedTimeline("");
       clearFilters();
+
+      // Redirect to thank you page after a short delay
+      setTimeout(() => {
+        router.push("/thank-you");
+      }, 1500);
     } catch (error) {
       console.error("Contact form error:", error);
 

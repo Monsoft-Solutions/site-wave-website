@@ -5,6 +5,7 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -68,6 +69,7 @@ export function MarketingContactForm({
   onSuccess,
   className = "",
 }: MarketingContactFormProps) {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [hasStartedForm, setHasStartedForm] = useState(false);
@@ -143,7 +145,12 @@ export function MarketingContactForm({
         onSuccess(data);
       }
 
-      // Reset form after a delay
+      // Redirect to thank you page after a short delay
+      setTimeout(() => {
+        router.push("/thank-you");
+      }, 1500);
+
+      // Reset form after a longer delay (in case user doesn't get redirected)
       setTimeout(() => {
         form.reset();
         setIsSubmitted(false);
