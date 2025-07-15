@@ -61,9 +61,8 @@ function detectSpam(data: {
 
   // Check for common spam indicators
   const spamPatterns = [
-    /\b(viagra|cialis|crypto|casino|porn|xxx|seo|loan|dating|sex|free money)\b/i,
-    /\b(buy|cheap|free|discount|wholesale|sell)\b.{0,20}\b(watches|drugs|medicine|pills)\b/i,
-    /https?:\/\/\S+/g, // Multiple links in message
+    /\b(viagra|cialis|crypto|casino|porn|xxx|loan|dating|sex|free money)\b/i,
+    /\b(buy|cheap|discount|wholesale|sell)\b.{0,20}\b(watches|drugs|medicine|pills)\b/i,
   ];
 
   // Check content against patterns
