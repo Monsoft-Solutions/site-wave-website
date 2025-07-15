@@ -270,14 +270,6 @@ export function ThankYouPage(): React.JSX.Element {
                   While you wait, explore our latest work and insights
                 </p>
                 <div className="flex flex-wrap justify-center gap-3">
-                  <Link href="/portfolio">
-                    <Badge
-                      variant="secondary"
-                      className="cursor-pointer hover:bg-primary/10 transition-colors"
-                    >
-                      View Our Portfolio
-                    </Badge>
-                  </Link>
                   <Link href="/services">
                     <Badge
                       variant="secondary"
