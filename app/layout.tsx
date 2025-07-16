@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
-import { AnalyticsInitializer } from "@/components/analytics/AnalyticsInitializer";
+import { EnhancedAnalyticsInitializer } from "@/components/analytics/UTMTrackingInitializer";
 import { defaultMetadata } from "@/lib/config/seo";
 import { clientEnv } from "@/lib/env-client";
 
@@ -34,7 +34,7 @@ export default function RootLayout({
         {clientEnv.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID && (
           <GoogleAnalytics gaId={clientEnv.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID} />
         )}
-        <AnalyticsInitializer />
+        <EnhancedAnalyticsInitializer />
       </body>
     </html>
   );

@@ -51,9 +51,8 @@ function isRateLimited(ip: string): boolean {
 }
 
 /**
- * Simple spam detection for contact forms
- * This is just a basic implementation and should be expanded
- * with a more robust solution in production
+ * Simple spam detection
+ * In production, use a more sophisticated solution
  */
 function detectSpam(data: {
   name: string;
@@ -62,26 +61,63 @@ function detectSpam(data: {
 }): boolean {
   const { name, email, message } = data;
 
-  // Check for common spam indicators
-  const spamPatterns = [
-    /\b(viagra|cialis|crypto|casino|porn|xxx|loan|dating|sex|free money)\b/i,
-    /\b(buy|cheap|discount|wholesale|sell)\b.{0,20}\b(watches|drugs|medicine|pills)\b/i,
+  // Check for suspicious keywords
+  const spamKeywords = [
+    "bitcoin",
+    "cryptocurrency",
+    "loan",
+    "viagra",
+    "casino",
+    "pills",
+    "weight loss",
+    "make money",
+    "work from home",
+    "click here",
+    "limited time",
+    "act now",
+    "guaranteed",
+    "risk-free",
   ];
 
-  // Check content against patterns
-  for (const pattern of spamPatterns) {
-    if (pattern.test(name) || pattern.test(email) || pattern.test(message)) {
-      return true;
-    }
+  const text = `${name} ${email} ${message}`.toLowerCase();
+  if (spamKeywords.some((keyword) => text.includes(keyword))) {
+    return true;
   }
 
-  // Count links in message - too many links is often spam
-  const linkMatches = message.match(/https?:\/\/\S+/g);
-  if (linkMatches && linkMatches.length > 3) {
+  // Check for excessive URLs
+  const urlCount = (message.match(/https?:\/\//g) || []).length;
+  if (urlCount > 2) {
+    return true;
+  }
+
+  // Check for repetitive text
+  const words = message.split(/\s+/);
+  const uniqueWords = new Set(words);
+  if (words.length > 10 && uniqueWords.size < words.length * 0.5) {
     return true;
   }
 
   return false;
+}
+
+/**
+ * Extract UTM tracking data from validated form data
+ */
+function extractUTMTrackingData(
+  data: ContactFormData | EnhancedContactFormData | MarketingContactFormData
+) {
+  // Since all form schemas now include UTM fields, we can safely access them
+  const utmData = data as Record<string, unknown>;
+
+  return {
+    utmSource: (utmData.utmSource as string | undefined) || null,
+    utmMedium: (utmData.utmMedium as string | undefined) || null,
+    utmCampaign: (utmData.utmCampaign as string | undefined) || null,
+    utmTerm: (utmData.utmTerm as string | undefined) || null,
+    utmContent: (utmData.utmContent as string | undefined) || null,
+    referrerUrl: (utmData.referrerUrl as string | undefined) || null,
+    landingPageUrl: (utmData.landingPageUrl as string | undefined) || null,
+  };
 }
 
 /**
@@ -163,6 +199,9 @@ export async function POST(request: NextRequest) {
     let price = null;
     let sourcePageUrl = null;
 
+    // Extract UTM tracking data from all form types
+    const utmData = extractUTMTrackingData(validatedData);
+
     if (formType === "marketing") {
       const marketingData = validatedData as MarketingContactFormData;
       company = marketingData.company || null;
@@ -181,6 +220,13 @@ export async function POST(request: NextRequest) {
       timeline = enhancedData.timeline || null;
       serviceInterest = enhancedData.serviceInterest || null;
       sourcePageUrl = enhancedData.sourcePageUrl || null;
+    } else {
+      // Basic form - extract sourcePageUrl if available
+      const basicData = validatedData as ContactFormData;
+      sourcePageUrl =
+        ((basicData as Record<string, unknown>).sourcePageUrl as
+          | string
+          | undefined) || null;
     }
 
     // Spam detection
@@ -203,7 +249,7 @@ export async function POST(request: NextRequest) {
     // Get user agent for tracking
     const userAgent = headersList.get("user-agent") || null;
 
-    // Insert into database
+    // Insert into database with UTM tracking data
     const [submission] = await db
       .insert(contactSubmissions)
       .values({
@@ -222,6 +268,15 @@ export async function POST(request: NextRequest) {
         formType,
         price,
         sourcePageUrl,
+        // UTM tracking fields
+        utmSource: utmData.utmSource,
+        utmMedium: utmData.utmMedium,
+        utmCampaign: utmData.utmCampaign,
+        utmTerm: utmData.utmTerm,
+        utmContent: utmData.utmContent,
+        referrerUrl: utmData.referrerUrl,
+        landingPageUrl: utmData.landingPageUrl,
+        // System fields
         ipAddress: clientIp !== "unknown" ? clientIp : null,
         userAgent,
         status: "new",
@@ -229,7 +284,8 @@ export async function POST(request: NextRequest) {
       .returning({ id: contactSubmissions.id });
 
     console.log(
-      `New ${formType} contact submission from ${email} (ID: ${submission.id})`
+      `New ${formType} contact submission from ${email} (ID: ${submission.id})`,
+      utmData.utmSource ? `UTM Source: ${utmData.utmSource}` : ""
     );
 
     // Send confirmation email to user and notification to admins
@@ -274,38 +330,26 @@ export async function POST(request: NextRequest) {
       ),
     ];
 
-    // Send emails in parallel (don't wait for completion to avoid blocking the response)
-    Promise.all(emailPromises)
-      .then(([confirmationResult, notificationResult]) => {
-        if (confirmationResult.success) {
-          console.log(`Confirmation email sent to ${email}`);
-        } else {
-          console.error(
-            `Failed to send confirmation email to ${email}:`,
-            confirmationResult.error
-          );
-        }
+    // Send emails in parallel
+    const emailResults = await Promise.allSettled(emailPromises);
 
-        if (notificationResult.success) {
-          console.log(`Notification email sent to admins`);
-        } else {
-          console.error(
-            `Failed to send notification email to admins:`,
-            notificationResult.error
-          );
-        }
-      })
-      .catch((error) => {
-        console.error("Error sending emails:", error);
-      });
+    // Log email sending results
+    emailResults.forEach((result, index) => {
+      const emailType = index === 0 ? "confirmation" : "notification";
+      if (result.status === "rejected") {
+        console.error(`Failed to send ${emailType} email:`, result.reason);
+      } else {
+        console.log(`${emailType} email sent successfully`);
+      }
+    });
 
+    // Return success response
     const response: ApiResponse<ContactSubmissionResponse> = {
       success: true,
-      data: {
-        submissionId: submission.id,
-      },
+      data: { submissionId: submission.id },
       message: "Thank you for your message. We'll get back to you soon!",
     };
+
     return NextResponse.json(response);
   } catch (error) {
     console.error("Contact form submission error:", error);
@@ -313,9 +357,11 @@ export async function POST(request: NextRequest) {
     const response: ApiResponse<ContactSubmissionResponse> = {
       success: false,
       data: {} as ContactSubmissionResponse,
-      error: "Internal server error",
-      message: "Something went wrong. Please try again later.",
+      error: error instanceof Error ? error.message : "Internal server error",
+      message:
+        "Sorry, we encountered an error processing your message. Please try again later.",
     };
+
     return NextResponse.json(response, { status: 500 });
   }
 }

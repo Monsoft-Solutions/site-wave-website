@@ -20,6 +20,7 @@ import { ContactFormResponse } from "@/lib/types/contact-submission.type";
 import { analytics } from "@/lib/utils/analytics";
 import { useServices } from "@/lib/hooks/use-services.hook";
 import { ServiceWithRelations } from "@/lib/types/service-with-relations.type";
+import { useFormTrackingData } from "@/lib/hooks/use-utm-tracking";
 import {
   Send,
   User,
@@ -193,6 +194,9 @@ export function EnhancedContactForm(): React.JSX.Element {
     error: servicesError,
   } = useServices();
 
+  // Get UTM tracking data for form submission
+  const { getTrackingDataForSubmission } = useFormTrackingData();
+
   const form = useForm<EnhancedContactFormData>({
     resolver: zodResolver(enhancedContactFormSchema),
     defaultValues: {
@@ -202,6 +206,14 @@ export function EnhancedContactForm(): React.JSX.Element {
       message: "",
       company: "",
       phone: "",
+      // UTM fields will be populated on form submission
+      utmSource: undefined,
+      utmMedium: undefined,
+      utmCampaign: undefined,
+      utmTerm: undefined,
+      utmContent: undefined,
+      referrerUrl: undefined,
+      landingPageUrl: undefined,
     },
     mode: "onChange",
   });
@@ -363,6 +375,9 @@ export function EnhancedContactForm(): React.JSX.Element {
       // Get the selected service to extract the title
       const selectedService = services?.find((s) => s.id === selectedServiceId);
 
+      // Get current UTM tracking data from session
+      const trackingData = getTrackingDataForSubmission();
+
       const submissionData = {
         ...data,
         serviceId: selectedServiceId,
@@ -372,8 +387,15 @@ export function EnhancedContactForm(): React.JSX.Element {
         serviceInterest: selectedService?.title || null,
         formType: "enhanced",
         // Add source page URL for tracking
-        sourcePageUrl:
-          typeof window !== "undefined" ? window.location.href : "",
+        sourcePageUrl: trackingData.source_page_url,
+        // UTM tracking fields from session
+        utmSource: trackingData.utm_source,
+        utmMedium: trackingData.utm_medium,
+        utmCampaign: trackingData.utm_campaign,
+        utmTerm: trackingData.utm_term,
+        utmContent: trackingData.utm_content,
+        referrerUrl: trackingData.referrer_url,
+        landingPageUrl: trackingData.landing_page_url,
       };
 
       const response = await fetch("/api/contact", {

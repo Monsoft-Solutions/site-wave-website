@@ -1,28 +1,33 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
-import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { LoadingSpinner } from "@/components/layout/Loading";
-import { Send, CheckCircle, ArrowRight } from "lucide-react";
-import { analytics } from "@/lib/utils/analytics";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   marketingContactFormSchema,
   type MarketingContactFormData,
 } from "@/lib/utils/contact-form-validation";
+import { analytics } from "@/lib/utils/analytics";
+import { useFormTrackingData } from "@/lib/hooks/use-utm-tracking";
 
 interface MarketingContactFormProps {
   location?: string;
   service?: string;
   price?: string;
-  variant?: "default" | "compact" | "inline";
   onSuccess?: (data: MarketingContactFormData) => void;
   className?: string;
 }
@@ -38,6 +43,9 @@ export function MarketingContactForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [hasStartedForm, setHasStartedForm] = useState(false);
+
+  // Get UTM tracking data for form submission
+  const { getTrackingDataForSubmission } = useFormTrackingData();
 
   const form = useForm<MarketingContactFormData>({
     resolver: zodResolver(marketingContactFormSchema),
@@ -56,6 +64,14 @@ export function MarketingContactForm({
       formType: "marketing-landing",
       price: price,
       sourcePageUrl: typeof window !== "undefined" ? window.location.href : "",
+      // UTM fields will be populated on form submission
+      utmSource: undefined,
+      utmMedium: undefined,
+      utmCampaign: undefined,
+      utmTerm: undefined,
+      utmContent: undefined,
+      referrerUrl: undefined,
+      landingPageUrl: undefined,
     },
   });
 
@@ -75,7 +91,10 @@ export function MarketingContactForm({
     analytics.trackContact.formSubmit();
 
     try {
-      // Prepare submission data with clean message and separate metadata
+      // Get current UTM tracking data from session
+      const trackingData = getTrackingDataForSubmission();
+
+      // Prepare submission data with UTM tracking information
       const submissionData: MarketingContactFormData = {
         name: data.name,
         email: data.email,
@@ -90,8 +109,15 @@ export function MarketingContactForm({
         location: location,
         formType: "marketing-landing",
         price: price,
-        sourcePageUrl:
-          typeof window !== "undefined" ? window.location.href : "",
+        sourcePageUrl: trackingData.source_page_url,
+        // UTM tracking fields from session
+        utmSource: trackingData.utm_source,
+        utmMedium: trackingData.utm_medium,
+        utmCampaign: trackingData.utm_campaign,
+        utmTerm: trackingData.utm_term,
+        utmContent: trackingData.utm_content,
+        referrerUrl: trackingData.referrer_url,
+        landingPageUrl: trackingData.landing_page_url,
       };
 
       const response = await fetch("/api/contact", {
@@ -117,7 +143,7 @@ export function MarketingContactForm({
 
       // Call onSuccess callback if provided
       if (onSuccess) {
-        onSuccess(data);
+        onSuccess(submissionData);
       }
 
       // Redirect to thank you page after a short delay
@@ -133,313 +159,281 @@ export function MarketingContactForm({
     } catch (error) {
       console.error("Form submission error:", error);
 
-      // Track form submission error
+      if (error instanceof Error) {
+        if (error.message.includes("Rate limit exceeded")) {
+          toast.error("Too many submissions", {
+            description: "Please wait a few minutes before trying again.",
+            duration: 8000,
+          });
+        } else if (error.message.includes("Validation failed")) {
+          toast.error("Please check your information", {
+            description: "Make sure all required fields are filled correctly.",
+            duration: 6000,
+          });
+        } else {
+          toast.error("Submission failed", {
+            description: "Please try again or contact us directly.",
+            duration: 6000,
+          });
+        }
+      } else {
+        toast.error("Something went wrong", {
+          description: "Please try again later.",
+          duration: 6000,
+        });
+      }
+
       analytics.trackError(
-        "marketing_form_error",
+        "form_submission_error",
         error instanceof Error ? error.message : "Unknown error",
         "MarketingContactForm"
-      );
-
-      toast.error(
-        "Something went wrong. Please try again or call us directly.",
-        {
-          description: "Our team is standing by to help you!",
-          duration: 5000,
-        }
       );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const formVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.5,
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const fieldVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: { duration: 0.3 },
-    },
-  };
-
-  const timelineOptions = [
-    { value: "asap", label: "ASAP" },
-    { value: "1-3-months", label: "1-3 months" },
-    { value: "3-6-months", label: "3-6 months" },
-    { value: "6-plus-months", label: "6+ months" },
-    { value: "exploring", label: "Just exploring" },
-  ];
-
   if (isSubmitted) {
     return (
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className={`p-8 text-center ${className}`}
-      >
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-          className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4"
-        >
-          <CheckCircle className="w-8 h-8 text-green-600" />
-        </motion.div>
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">Thank You!</h3>
-        <p className="text-gray-600 mb-4">
-          We&apos;ve received your information and will contact you within 24
-          hours.
-        </p>
-        <p className="text-sm text-gray-500">
-          Check your email for our free {service.toLowerCase()} guide!
-        </p>
-      </motion.div>
+      <Card className={className}>
+        <CardContent className="p-6 text-center">
+          <div className="space-y-4">
+            <div className="flex items-center justify-center w-16 h-16 mx-auto bg-green-100 rounded-full">
+              <svg
+                className="w-8 h-8 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900">Thank You!</h3>
+            <p className="text-gray-600">
+              We&apos;ll contact you within 24 hours with next steps for your{" "}
+              {service.toLowerCase()} project in {location}.
+            </p>
+            <p className="text-sm text-gray-500">
+              Check your email for our comprehensive {service.toLowerCase()}{" "}
+              guide!
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <motion.div
-      variants={formVariants}
-      initial="hidden"
-      animate="visible"
-      className={`${className}`}
-    >
-      <FormProvider {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Header */}
-          <motion.div variants={fieldVariants} className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">
-              Get Your Free {service} Quote
-            </h3>
-            <p className="text-gray-600">
-              Professional {service.toLowerCase()} for small businesses in{" "}
-              {location}
-            </p>
-            <div className="mt-3">
-              <span className="inline-flex items-center px-4 py-2 bg-coral-orange/10 text-coral-orange rounded-full text-sm font-semibold">
-                {price} • Free Consultation
-              </span>
-            </div>
-          </motion.div>
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle className="text-xl">
+          Get Your Free {service} Consultation
+        </CardTitle>
+        <p className="text-gray-600">
+          {price} - Serving {location} and surrounding areas
+        </p>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          {/* Name Field */}
+          <div className="space-y-2">
+            <Label htmlFor="name">
+              Full Name <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="name"
+              type="text"
+              placeholder="Enter your full name"
+              {...form.register("name")}
+              className="w-full"
+            />
+            {form.formState.errors.name && (
+              <p className="text-sm text-red-600">
+                {form.formState.errors.name.message}
+              </p>
+            )}
+          </div>
 
-          {/* Form Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <motion.div variants={fieldVariants} className="space-y-2">
-              <Label
-                htmlFor="name"
-                className="text-sm font-medium text-gray-700"
-              >
-                Full Name *
-              </Label>
-              <Input
-                id="name"
-                {...form.register("name")}
-                className="w-full"
-                placeholder="John Smith"
-              />
-              {form.formState.errors.name && (
-                <p className="text-sm text-red-600">
-                  {form.formState.errors.name.message}
-                </p>
-              )}
-            </motion.div>
+          {/* Email Field */}
+          <div className="space-y-2">
+            <Label htmlFor="email">
+              Email Address <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="your@email.com"
+              {...form.register("email")}
+              className="w-full"
+            />
+            {form.formState.errors.email && (
+              <p className="text-sm text-red-600">
+                {form.formState.errors.email.message}
+              </p>
+            )}
+          </div>
 
-            <motion.div variants={fieldVariants} className="space-y-2">
-              <Label
-                htmlFor="email"
-                className="text-sm font-medium text-gray-700"
-              >
-                Email Address *
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                {...form.register("email")}
-                className="w-full"
-                placeholder="john@company.com"
-              />
-              {form.formState.errors.email && (
-                <p className="text-sm text-red-600">
-                  {form.formState.errors.email.message}
-                </p>
-              )}
-            </motion.div>
+          {/* Phone Field */}
+          <div className="space-y-2">
+            <Label htmlFor="phone">
+              Phone Number <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="phone"
+              type="tel"
+              placeholder="(555) 123-4567"
+              {...form.register("phone")}
+              className="w-full"
+            />
+            {form.formState.errors.phone && (
+              <p className="text-sm text-red-600">
+                {form.formState.errors.phone.message}
+              </p>
+            )}
+          </div>
 
-            <motion.div variants={fieldVariants} className="space-y-2">
-              <Label
-                htmlFor="phone"
-                className="text-sm font-medium text-gray-700"
-              >
-                Phone Number *
-              </Label>
-              <Input
-                id="phone"
-                type="tel"
-                {...form.register("phone")}
-                className="w-full"
-                placeholder="(555) 123-4567"
-              />
-              {form.formState.errors.phone && (
-                <p className="text-sm text-red-600">
-                  {form.formState.errors.phone.message}
-                </p>
-              )}
-            </motion.div>
+          {/* Company Field */}
+          <div className="space-y-2">
+            <Label htmlFor="company">
+              Company Name <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="company"
+              type="text"
+              placeholder="Your business name"
+              {...form.register("company")}
+              className="w-full"
+            />
+            {form.formState.errors.company && (
+              <p className="text-sm text-red-600">
+                {form.formState.errors.company.message}
+              </p>
+            )}
+          </div>
 
-            <motion.div variants={fieldVariants} className="space-y-2">
-              <Label
-                htmlFor="company"
-                className="text-sm font-medium text-gray-700"
-              >
-                Company Name *
-              </Label>
-              <Input
-                id="company"
-                {...form.register("company")}
-                className="w-full"
-                placeholder="Your Business Name"
-              />
-              {form.formState.errors.company && (
-                <p className="text-sm text-red-600">
-                  {form.formState.errors.company.message}
-                </p>
-              )}
-            </motion.div>
+          {/* Website Field */}
+          <div className="space-y-2">
+            <Label htmlFor="website">Current Website (if any)</Label>
+            <Input
+              id="website"
+              type="url"
+              placeholder="https://your-current-website.com"
+              {...form.register("website")}
+              className="w-full"
+            />
+            {form.formState.errors.website && (
+              <p className="text-sm text-red-600">
+                {form.formState.errors.website.message}
+              </p>
+            )}
+          </div>
 
-            <motion.div
-              variants={fieldVariants}
-              className="space-y-2 md:col-span-2"
+          {/* Timeline Field */}
+          <div className="space-y-2">
+            <Label htmlFor="timeline">Project Timeline</Label>
+            <Select
+              onValueChange={(value) =>
+                form.setValue(
+                  "timeline",
+                  value as
+                    | "asap"
+                    | "1-3-months"
+                    | "3-6-months"
+                    | "6-plus-months"
+                    | "exploring",
+                  {
+                    shouldValidate: true,
+                  }
+                )
+              }
             >
-              <Label
-                htmlFor="website"
-                className="text-sm font-medium text-gray-700"
-              >
-                Current Website (if any)
-              </Label>
-              <Input
-                id="website"
-                type="url"
-                {...form.register("website")}
-                className="w-full"
-                placeholder="https://www.yourwebsite.com"
-              />
-              {form.formState.errors.website && (
-                <p className="text-sm text-red-600">
-                  {form.formState.errors.website.message}
-                </p>
-              )}
-            </motion.div>
+              <SelectTrigger>
+                <SelectValue placeholder="When do you need this completed?" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="asap">ASAP</SelectItem>
+                <SelectItem value="1-3-months">1-3 months</SelectItem>
+                <SelectItem value="3-6-months">3-6 months</SelectItem>
+                <SelectItem value="6-plus-months">6+ months</SelectItem>
+                <SelectItem value="exploring">
+                  Just exploring options
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            {form.formState.errors.timeline && (
+              <p className="text-sm text-red-600">
+                {form.formState.errors.timeline.message}
+              </p>
+            )}
+          </div>
 
-            <motion.div
-              variants={fieldVariants}
-              className="space-y-2 md:col-span-2"
-            >
-              <Label
-                htmlFor="subject"
-                className="text-sm font-medium text-gray-700"
-              >
-                Subject *
-              </Label>
-              <Input
-                id="subject"
-                {...form.register("subject")}
-                className="w-full"
-                placeholder="Website Design Inquiry"
-              />
-              {form.formState.errors.subject && (
-                <p className="text-sm text-red-600">
-                  {form.formState.errors.subject.message}
-                </p>
-              )}
-            </motion.div>
-
-            <motion.div variants={fieldVariants} className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">
-                Timeline *
-              </Label>
-              <div className="grid grid-cols-1 gap-2">
-                {timelineOptions.map((option) => (
-                  <label
-                    key={option.value}
-                    className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                  >
-                    <input
-                      type="radio"
-                      value={option.value}
-                      {...form.register("timeline")}
-                      className="text-ocean-blue focus:ring-ocean-blue"
-                    />
-                    <span className="text-sm text-gray-700">
-                      {option.label}
-                    </span>
-                  </label>
-                ))}
-              </div>
-              {form.formState.errors.timeline && (
-                <p className="text-sm text-red-600">
-                  {form.formState.errors.timeline.message}
-                </p>
-              )}
-            </motion.div>
-
-            <motion.div variants={fieldVariants} className="space-y-2">
-              <Label
-                htmlFor="message"
-                className="text-sm font-medium text-gray-700"
-              >
-                Tell us about your project *
-              </Label>
-              <Textarea
-                id="message"
-                {...form.register("message")}
-                className="w-full min-h-[100px]"
-                placeholder={`What kind of ${service.toLowerCase()} do you need? Any specific features or requirements?`}
-              />
-              {form.formState.errors.message && (
-                <p className="text-sm text-red-600">
-                  {form.formState.errors.message.message}
-                </p>
-              )}
-            </motion.div>
+          {/* Message Field */}
+          <div className="space-y-2">
+            <Label htmlFor="message">
+              Project Details <span className="text-red-500">*</span>
+            </Label>
+            <Textarea
+              id="message"
+              placeholder={`Tell us about your ${service.toLowerCase()} needs...`}
+              rows={4}
+              {...form.register("message")}
+              className="w-full"
+            />
+            {form.formState.errors.message && (
+              <p className="text-sm text-red-600">
+                {form.formState.errors.message.message}
+              </p>
+            )}
           </div>
 
           {/* Submit Button */}
-          <motion.div variants={fieldVariants} className="pt-4">
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-ocean-blue hover:bg-ocean-blue/90 text-white py-4 text-lg font-semibold rounded-lg transition-all duration-300 transform hover:scale-[1.02] disabled:transform-none"
-            >
-              {isSubmitting ? (
-                <span className="flex items-center justify-center">
-                  <LoadingSpinner />
-                  <span className="ml-2">Sending...</span>
-                </span>
-              ) : (
-                <span className="flex items-center justify-center">
-                  <Send className="w-5 h-5 mr-2" />
-                  Get My Free Quote
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </span>
-              )}
-            </Button>
-            <p className="text-xs text-gray-500 text-center mt-3">
-              We respect your privacy. Your information will never be shared.
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+          >
+            {isSubmitting ? (
+              <>
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Sending...
+              </>
+            ) : (
+              `Get Your Free ${service} Consultation`
+            )}
+          </Button>
+
+          {/* Trust Indicators */}
+          <div className="text-center text-sm text-gray-500 mt-4">
+            <p>
+              ✓ Free consultation • ✓ No obligation • ✓ Response within 24hrs
             </p>
-          </motion.div>
+          </div>
         </form>
-      </FormProvider>
-    </motion.div>
+      </CardContent>
+    </Card>
   );
 }
