@@ -64,11 +64,7 @@ export function ServiceMarketingLandingPage({
         benefitsInView={inView.benefitsInView}
       />
 
-      <FeaturesSection
-        service={service}
-        featuresRef={refs.featuresRef}
-        featuresInView={inView.featuresInView}
-      />
+      <FeaturesSection service={service} featuresRef={refs.featuresRef} />
 
       <ProcessSection
         service={service}

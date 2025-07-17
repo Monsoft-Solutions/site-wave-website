@@ -16,6 +16,30 @@ export function ProcessSection({
   processRef,
   processInView,
 }: ProcessSectionProps) {
+  // Guard clause: Return early if process is empty or not available
+  if (!service.process || service.process.length === 0) {
+    return (
+      <motion.section ref={processRef} className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={processInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8 }}
+            className="text-center"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              Our {service.name} Process
+            </h2>
+            <p className="text-xl text-gray-600">
+              Process details coming soon. Contact us to learn more about how we
+              work.
+            </p>
+          </motion.div>
+        </div>
+      </motion.section>
+    );
+  }
+
   return (
     <motion.section ref={processRef} className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -39,15 +63,17 @@ export function ProcessSection({
               key={index}
               initial={{ opacity: 0, y: 50 }}
               animate={processInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: index * 0.2, duration: 0.8 }}
+              transition={{ delay: Math.min(index * 0.2, 1), duration: 0.8 }}
               className="text-center"
+              role="group"
+              aria-label={`Step ${index + 1}: ${step}`}
             >
               <div className="relative mb-6">
                 <div className="w-16 h-16 bg-ocean-blue text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto">
                   {index + 1}
                 </div>
                 {index < service.process.length - 1 && (
-                  <div className="hidden lg:block absolute top-8 left-full w-full h-0.5 bg-gray-300"></div>
+                  <div className="hidden sm:block lg:block absolute top-8 left-full w-full h-0.5 bg-gray-300"></div>
                 )}
               </div>
               <h3 className="text-xl font-bold mb-3">{step}</h3>

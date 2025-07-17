@@ -114,7 +114,7 @@ export const marketingContactFormSchema = z
     phone: z
       .string()
       .min(1, validationMessages.required("Phone"))
-      .regex(/^[\+]?[1-9][\d]{0,15}$/, validationMessages.phone),
+      .regex(/^[\+]?[1-9][\d\s\(\)\-\.]{5,20}$/, validationMessages.phone),
     company: z
       .string()
       .min(1, validationMessages.required("Company"))

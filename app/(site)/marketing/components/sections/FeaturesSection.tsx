@@ -10,21 +10,20 @@ interface FeaturesSectionProps {
     features: string[];
   };
   featuresRef: React.RefObject<HTMLDivElement>;
-  featuresInView: boolean;
 }
 
 export function FeaturesSection({
   service,
   featuresRef,
-  featuresInView,
 }: FeaturesSectionProps) {
   return (
     <motion.section ref={featuresRef} className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 50 }}
-          animate={featuresInView ? { opacity: 1, y: 0 } : {}}
+          whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
