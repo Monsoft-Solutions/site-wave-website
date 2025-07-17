@@ -5,6 +5,7 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +20,7 @@ import { ContactFormResponse } from "@/lib/types/contact-submission.type";
 import { analytics } from "@/lib/utils/analytics";
 import { useServices } from "@/lib/hooks/use-services.hook";
 import { ServiceWithRelations } from "@/lib/types/service-with-relations.type";
+import { useFormTrackingData } from "@/lib/hooks/use-utm-tracking";
 import {
   Send,
   User,
@@ -172,6 +174,7 @@ const timelineOptions: TimelineOption[] = [
  * Enhanced contact form with multi-step workflow
  */
 export function EnhancedContactForm(): React.JSX.Element {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [hasStartedForm, setHasStartedForm] = useState<boolean>(false);
@@ -191,6 +194,9 @@ export function EnhancedContactForm(): React.JSX.Element {
     error: servicesError,
   } = useServices();
 
+  // Get UTM tracking data for form submission
+  const { getTrackingDataForSubmission } = useFormTrackingData();
+
   const form = useForm<EnhancedContactFormData>({
     resolver: zodResolver(enhancedContactFormSchema),
     defaultValues: {
@@ -199,6 +205,15 @@ export function EnhancedContactForm(): React.JSX.Element {
       subject: "",
       message: "",
       company: "",
+      phone: "",
+      // UTM fields will be populated on form submission
+      utmSource: undefined,
+      utmMedium: undefined,
+      utmCampaign: undefined,
+      utmTerm: undefined,
+      utmContent: undefined,
+      referrerUrl: undefined,
+      landingPageUrl: undefined,
     },
     mode: "onChange",
   });
@@ -357,11 +372,30 @@ export function EnhancedContactForm(): React.JSX.Element {
     analytics.trackContact.formSubmit();
 
     try {
+      // Get the selected service to extract the title
+      const selectedService = services?.find((s) => s.id === selectedServiceId);
+
+      // Get current UTM tracking data from session
+      const trackingData = getTrackingDataForSubmission();
+
       const submissionData = {
         ...data,
         serviceId: selectedServiceId,
         budget: selectedBudget,
         timeline: selectedTimeline,
+        // Add metadata fields
+        serviceInterest: selectedService?.title || null,
+        formType: "enhanced",
+        // Add source page URL for tracking
+        sourcePageUrl: trackingData.source_page_url,
+        // UTM tracking fields from session
+        utmSource: trackingData.utm_source,
+        utmMedium: trackingData.utm_medium,
+        utmCampaign: trackingData.utm_campaign,
+        utmTerm: trackingData.utm_term,
+        utmContent: trackingData.utm_content,
+        referrerUrl: trackingData.referrer_url,
+        landingPageUrl: trackingData.landing_page_url,
       };
 
       const response = await fetch("/api/contact", {
@@ -413,6 +447,11 @@ export function EnhancedContactForm(): React.JSX.Element {
       setSelectedBudget("");
       setSelectedTimeline("");
       clearFilters();
+
+      // Redirect to thank you page after a short delay
+      setTimeout(() => {
+        router.push("/thank-you");
+      }, 1500);
     } catch (error) {
       console.error("Contact form error:", error);
 
@@ -924,6 +963,12 @@ export function EnhancedContactForm(): React.JSX.Element {
                             type="email"
                             placeholder="john@example.com"
                             required
+                          />
+                          <FormField
+                            name="phone"
+                            label="Phone Number (Optional)"
+                            type="tel"
+                            placeholder="(555) 123-4567"
                           />
                         </div>
 

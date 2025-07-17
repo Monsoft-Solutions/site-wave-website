@@ -5,7 +5,10 @@ import { contactSubmissions } from "@/lib/db/schema/contact-submission.table";
 import {
   contactFormSchema,
   enhancedContactFormSchema,
+  marketingContactFormSchema,
+  type ContactFormData,
   type EnhancedContactFormData,
+  type MarketingContactFormData,
 } from "@/lib/utils/contact-form-validation";
 import { ApiResponse } from "@/lib/types/api-response.type";
 import { ContactSubmissionResponse } from "@/lib/types/contact-submission.type";
@@ -48,9 +51,8 @@ function isRateLimited(ip: string): boolean {
 }
 
 /**
- * Simple spam detection for contact forms
- * This is just a basic implementation and should be expanded
- * with a more robust solution in production
+ * Simple spam detection
+ * In production, use a more sophisticated solution
  */
 function detectSpam(data: {
   name: string;
@@ -59,27 +61,63 @@ function detectSpam(data: {
 }): boolean {
   const { name, email, message } = data;
 
-  // Check for common spam indicators
-  const spamPatterns = [
-    /\b(viagra|cialis|crypto|casino|porn|xxx|seo|loan|dating|sex|free money)\b/i,
-    /\b(buy|cheap|free|discount|wholesale|sell)\b.{0,20}\b(watches|drugs|medicine|pills)\b/i,
-    /https?:\/\/\S+/g, // Multiple links in message
+  // Check for suspicious keywords
+  const spamKeywords = [
+    "bitcoin",
+    "cryptocurrency",
+    "loan",
+    "viagra",
+    "casino",
+    "pills",
+    "weight loss",
+    "make money",
+    "work from home",
+    "click here",
+    "limited time",
+    "act now",
+    "guaranteed",
+    "risk-free",
   ];
 
-  // Check content against patterns
-  for (const pattern of spamPatterns) {
-    if (pattern.test(name) || pattern.test(email) || pattern.test(message)) {
-      return true;
-    }
+  const text = `${name} ${email} ${message}`.toLowerCase();
+  if (spamKeywords.some((keyword) => text.includes(keyword))) {
+    return true;
   }
 
-  // Count links in message - too many links is often spam
-  const linkMatches = message.match(/https?:\/\/\S+/g);
-  if (linkMatches && linkMatches.length > 3) {
+  // Check for excessive URLs
+  const urlCount = (message.match(/https?:\/\//g) || []).length;
+  if (urlCount > 2) {
+    return true;
+  }
+
+  // Check for repetitive text
+  const words = message.split(/\s+/);
+  const uniqueWords = new Set(words);
+  if (words.length > 10 && uniqueWords.size < words.length * 0.5) {
     return true;
   }
 
   return false;
+}
+
+/**
+ * Extract UTM tracking data from validated form data
+ */
+function extractUTMTrackingData(
+  data: ContactFormData | EnhancedContactFormData | MarketingContactFormData
+) {
+  // Since all form schemas now include UTM fields, we can safely access them
+  const utmData = data as Record<string, unknown>;
+
+  return {
+    utmSource: (utmData.utmSource as string | undefined) || null,
+    utmMedium: (utmData.utmMedium as string | undefined) || null,
+    utmCampaign: (utmData.utmCampaign as string | undefined) || null,
+    utmTerm: (utmData.utmTerm as string | undefined) || null,
+    utmContent: (utmData.utmContent as string | undefined) || null,
+    referrerUrl: (utmData.referrerUrl as string | undefined) || null,
+    landingPageUrl: (utmData.landingPageUrl as string | undefined) || null,
+  };
 }
 
 /**
@@ -114,35 +152,82 @@ export async function POST(request: NextRequest) {
     // Parse and validate request body
     const body = await request.json();
 
-    // Try enhanced schema first, fallback to basic schema for backward compatibility
-    let validationResult = enhancedContactFormSchema.safeParse(body);
-    let isEnhanced = true;
+    // Try schemas in order: marketing, enhanced, then basic for backward compatibility
+    let validatedData:
+      | MarketingContactFormData
+      | EnhancedContactFormData
+      | ContactFormData;
+    let formType: "marketing" | "enhanced" | "basic";
 
-    if (!validationResult.success) {
-      validationResult = contactFormSchema.safeParse(body);
-      isEnhanced = false;
+    const marketingResult = marketingContactFormSchema.safeParse(body);
+    if (marketingResult.success) {
+      validatedData = marketingResult.data;
+      formType = "marketing";
+    } else {
+      const enhancedResult = enhancedContactFormSchema.safeParse(body);
+      if (enhancedResult.success) {
+        validatedData = enhancedResult.data;
+        formType = "enhanced";
+      } else {
+        const basicResult = contactFormSchema.safeParse(body);
+        if (basicResult.success) {
+          validatedData = basicResult.data;
+          formType = "basic";
+        } else {
+          const response: ApiResponse<ContactSubmissionResponse> = {
+            success: false,
+            data: {} as ContactSubmissionResponse,
+            error: "Validation failed",
+            message: basicResult.error.errors.map((e) => e.message).join(", "),
+          };
+          return NextResponse.json(response, { status: 400 });
+        }
+      }
     }
 
-    if (!validationResult.success) {
-      const response: ApiResponse<ContactSubmissionResponse> = {
-        success: false,
-        data: {} as ContactSubmissionResponse,
-        error: "Validation failed",
-        message: validationResult.error.errors.map((e) => e.message).join(", "),
-      };
-      return NextResponse.json(response, { status: 400 });
+    const { name, email, subject, message } = validatedData;
+
+    // Extract form-specific fields
+    let company = null;
+    let projectType = null;
+    let budget = null;
+    let timeline = null;
+    let phone = null;
+    let website = null;
+    let serviceInterest = null;
+    let location = null;
+    let price = null;
+    let sourcePageUrl = null;
+
+    // Extract UTM tracking data from all form types
+    const utmData = extractUTMTrackingData(validatedData);
+
+    if (formType === "marketing") {
+      const marketingData = validatedData as MarketingContactFormData;
+      company = marketingData.company || null;
+      timeline = marketingData.timeline || null;
+      phone = marketingData.phone || null;
+      website = marketingData.website || null;
+      serviceInterest = marketingData.serviceInterest || null;
+      location = marketingData.location || null;
+      price = marketingData.price || null;
+      sourcePageUrl = marketingData.sourcePageUrl || null;
+    } else if (formType === "enhanced") {
+      const enhancedData = validatedData as EnhancedContactFormData;
+      company = enhancedData.company || null;
+      projectType = enhancedData.serviceId || null; // Store service ID in projectType field
+      budget = enhancedData.budget || null;
+      timeline = enhancedData.timeline || null;
+      serviceInterest = enhancedData.serviceInterest || null;
+      sourcePageUrl = enhancedData.sourcePageUrl || null;
+    } else {
+      // Basic form - extract sourcePageUrl if available
+      const basicData = validatedData as ContactFormData;
+      sourcePageUrl =
+        ((basicData as Record<string, unknown>).sourcePageUrl as
+          | string
+          | undefined) || null;
     }
-
-    const { name, email, subject, message } = validationResult.data;
-
-    // Extract enhanced fields if available
-    const enhancedData = isEnhanced
-      ? (validationResult.data as EnhancedContactFormData)
-      : null;
-    const company = enhancedData?.company || null;
-    const projectType = enhancedData?.serviceId || null; // Store service ID in projectType field
-    const budget = enhancedData?.budget || null;
-    const timeline = enhancedData?.timeline || null;
 
     // Spam detection
     if (detectSpam({ name, email, message })) {
@@ -164,7 +249,7 @@ export async function POST(request: NextRequest) {
     // Get user agent for tracking
     const userAgent = headersList.get("user-agent") || null;
 
-    // Insert into database
+    // Insert into database with UTM tracking data
     const [submission] = await db
       .insert(contactSubmissions)
       .values({
@@ -176,13 +261,32 @@ export async function POST(request: NextRequest) {
         projectType,
         budget,
         timeline,
+        phone,
+        website,
+        serviceInterest,
+        location,
+        formType,
+        price,
+        sourcePageUrl,
+        // UTM tracking fields
+        utmSource: utmData.utmSource,
+        utmMedium: utmData.utmMedium,
+        utmCampaign: utmData.utmCampaign,
+        utmTerm: utmData.utmTerm,
+        utmContent: utmData.utmContent,
+        referrerUrl: utmData.referrerUrl,
+        landingPageUrl: utmData.landingPageUrl,
+        // System fields
         ipAddress: clientIp !== "unknown" ? clientIp : null,
         userAgent,
         status: "new",
       })
       .returning({ id: contactSubmissions.id });
 
-    console.log(`New contact submission from ${email} (ID: ${submission.id})`);
+    console.log(
+      `New ${formType} contact submission from ${email} (ID: ${submission.id})`,
+      utmData.utmSource ? `UTM Source: ${utmData.utmSource}` : ""
+    );
 
     // Send confirmation email to user and notification to admins
     const emailPromises = [
@@ -220,44 +324,32 @@ export async function POST(request: NextRequest) {
         },
         {
           to: "hello@sitewavefl.com",
-          subject: "New contact form submission",
+          subject: `New ${formType} contact form submission`,
           from: "support@monsoftlabs.com",
         }
       ),
     ];
 
-    // Send emails in parallel (don't wait for completion to avoid blocking the response)
-    Promise.all(emailPromises)
-      .then(([confirmationResult, notificationResult]) => {
-        if (confirmationResult.success) {
-          console.log(`Confirmation email sent to ${email}`);
-        } else {
-          console.error(
-            `Failed to send confirmation email to ${email}:`,
-            confirmationResult.error
-          );
-        }
+    // Send emails in parallel
+    const emailResults = await Promise.allSettled(emailPromises);
 
-        if (notificationResult.success) {
-          console.log(`Notification email sent to admins`);
-        } else {
-          console.error(
-            `Failed to send notification email to admins:`,
-            notificationResult.error
-          );
-        }
-      })
-      .catch((error) => {
-        console.error("Error sending emails:", error);
-      });
+    // Log email sending results
+    emailResults.forEach((result, index) => {
+      const emailType = index === 0 ? "confirmation" : "notification";
+      if (result.status === "rejected") {
+        console.error(`Failed to send ${emailType} email:`, result.reason);
+      } else {
+        console.log(`${emailType} email sent successfully`);
+      }
+    });
 
+    // Return success response
     const response: ApiResponse<ContactSubmissionResponse> = {
       success: true,
-      data: {
-        submissionId: submission.id,
-      },
+      data: { submissionId: submission.id },
       message: "Thank you for your message. We'll get back to you soon!",
     };
+
     return NextResponse.json(response);
   } catch (error) {
     console.error("Contact form submission error:", error);
@@ -265,9 +357,11 @@ export async function POST(request: NextRequest) {
     const response: ApiResponse<ContactSubmissionResponse> = {
       success: false,
       data: {} as ContactSubmissionResponse,
-      error: "Internal server error",
-      message: "Something went wrong. Please try again later.",
+      error: error instanceof Error ? error.message : "Internal server error",
+      message:
+        "Sorry, we encountered an error processing your message. Please try again later.",
     };
+
     return NextResponse.json(response, { status: 500 });
   }
 }

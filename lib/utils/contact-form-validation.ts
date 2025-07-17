@@ -47,17 +47,47 @@ export const timelineSchema = z
   .enum(["asap", "1-2-months", "3-6-months", "6-12-months", "flexible"])
   .optional();
 
-// Contact form schema
-export const contactFormSchema = z.object({
-  name: nameSchema,
-  email: emailSchema,
-  subject: z.string().min(1, validationMessages.required("Subject")).optional(),
-  message: z
-    .string()
-    .min(1, validationMessages.required("Message"))
-    .min(10, validationMessages.min("Message", 10))
-    .max(1000, validationMessages.max("Message", 1000)),
+// Marketing form timeline validation
+export const marketingTimelineSchema = z
+  .enum(["asap", "1-3-months", "3-6-months", "6-plus-months", "exploring"])
+  .optional();
+
+// UTM Parameter validation schemas
+export const utmParameterSchema = z
+  .string()
+  .max(255, validationMessages.max("UTM parameter", 255))
+  .optional();
+
+// UTM tracking data schema for all UTM parameters
+export const utmTrackingSchema = z.object({
+  // UTM Campaign Parameters
+  utmSource: utmParameterSchema, // Traffic source (e.g., "google", "facebook", "newsletter")
+  utmMedium: utmParameterSchema, // Marketing medium (e.g., "cpc", "social", "email")
+  utmCampaign: utmParameterSchema, // Campaign name (e.g., "spring_sale", "new_product_launch")
+  utmTerm: utmParameterSchema, // Paid search keyword
+  utmContent: utmParameterSchema, // Content variation (e.g., "banner_ad", "text_link")
+
+  // Referrer and navigation tracking
+  referrerUrl: z.string().url().optional().or(z.literal("")), // The page that referred the user
+  landingPageUrl: z.string().url().optional().or(z.literal("")), // First page user visited in session
 });
+
+// Contact form schema
+export const contactFormSchema = z
+  .object({
+    name: nameSchema,
+    email: emailSchema,
+    subject: z
+      .string()
+      .min(1, validationMessages.required("Subject"))
+      .optional(),
+    message: z
+      .string()
+      .min(1, validationMessages.required("Message"))
+      .min(10, validationMessages.min("Message", 10))
+      .max(1000, validationMessages.max("Message", 1000)),
+  })
+  .merge(utmTrackingSchema);
 
 // Enhanced contact form schema with additional project details
 export const enhancedContactFormSchema = contactFormSchema.extend({
@@ -65,10 +95,54 @@ export const enhancedContactFormSchema = contactFormSchema.extend({
     .string()
     .max(255, validationMessages.max("Company", 255))
     .optional(),
+  phone: phoneSchema,
   serviceId: serviceIdSchema,
   budget: budgetRangeSchema,
   timeline: timelineSchema,
+  // Metadata fields
+  serviceInterest: z.string().max(255).optional(),
+  formType: z.string().max(50).optional(),
+  // Tracking fields
+  sourcePageUrl: z.string().url().optional().or(z.literal("")),
 });
+
+// Marketing contact form schema with separate metadata fields
+export const marketingContactFormSchema = z
+  .object({
+    name: nameSchema,
+    email: emailSchema,
+    phone: z
+      .string()
+      .min(1, validationMessages.required("Phone"))
+      .regex(/^[\+]?[1-9][\d\s\(\)\-\.]{5,20}$/, validationMessages.phone),
+    company: z
+      .string()
+      .min(1, validationMessages.required("Company"))
+      .max(255, validationMessages.max("Company", 255)),
+    website: z
+      .string()
+      .url(validationMessages.url)
+      .optional()
+      .or(z.literal("")),
+    subject: z
+      .string()
+      .min(1, validationMessages.required("Subject"))
+      .max(255, validationMessages.max("Subject", 255)),
+    message: z
+      .string()
+      .min(1, validationMessages.required("Message"))
+      .min(10, validationMessages.min("Message", 10))
+      .max(1000, validationMessages.max("Message", 1000)),
+    timeline: marketingTimelineSchema,
+
+    // Metadata fields (not user-entered, but included for validation)
+    serviceInterest: z.string().max(255).optional(),
+    location: z.string().max(255).optional(),
+    formType: z.string().max(50).optional(),
+    price: z.string().max(100).optional(),
+    sourcePageUrl: z.string().url().optional().or(z.literal("")),
+  })
+  .merge(utmTrackingSchema);
 
 // Blog comment schema
 export const blogCommentSchema = z.object({
@@ -89,5 +163,9 @@ export const newsletterSchema = z.object({
 // Type exports
 export type ContactFormData = z.infer<typeof contactFormSchema>;
 export type EnhancedContactFormData = z.infer<typeof enhancedContactFormSchema>;
+export type MarketingContactFormData = z.infer<
+  typeof marketingContactFormSchema
+>;
 export type BlogCommentData = z.infer<typeof blogCommentSchema>;
 export type NewsletterData = z.infer<typeof newsletterSchema>;
+export type UTMTrackingData = z.infer<typeof utmTrackingSchema>;
