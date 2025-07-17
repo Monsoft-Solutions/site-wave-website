@@ -162,13 +162,16 @@ export default async function ServiceMarketingPage({
     discount
   );
 
+  // Convert discount string to number for the component
+  const discountNumber = discount ? parseFloat(discount) : undefined;
+
   return (
     <ServiceMarketingLandingPage
       location={locationName}
       service={serviceConfig}
       price={finalPrice}
       originalPrice={originalPrice}
-      discount={discount}
+      discount={discountNumber}
       discountAmount={discountAmount}
       offer={offer}
     />
