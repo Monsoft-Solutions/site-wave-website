@@ -365,26 +365,52 @@ export function EnhancedContactForm(): React.JSX.Element {
    * Handle form submission
    */
   const onSubmit = async (data: EnhancedContactFormData): Promise<void> => {
+    console.log('🚀 Form submission started', { data, selectedServiceId, selectedBudget, selectedTimeline });
+
     // Prevent double submission
     if (isSubmitting) {
+      console.log('⚠️ Already submitting, preventing double submission');
       return;
     }
 
     setIsSubmitting(true);
-    analytics.trackContact.formSubmit();
+    console.log('✅ Set isSubmitting to true');
 
     try {
-      // Validate required fields before submission
-      if (!selectedServiceId || !selectedBudget || !selectedTimeline) {
-        toast.error("Please complete all required fields");
+      analytics.trackContact.formSubmit();
+      console.log('📊 Analytics tracked');
+
+      // Check if services are loaded
+      console.log('🔍 Checking if services are loaded...');
+      if (!services || services.length === 0) {
+        console.log('❌ Services not loaded yet');
+        toast.error("Please wait for services to load and try again");
+        setIsSubmitting(false);
         return;
       }
 
+      // Validate required fields before submission
+      console.log('🔍 Validating required fields...');
+      if (!selectedServiceId || !selectedBudget || !selectedTimeline) {
+        console.log('❌ Validation failed - missing required fields', {
+          selectedServiceId,
+          selectedBudget,
+          selectedTimeline
+        });
+        toast.error("Please complete all required fields");
+        setIsSubmitting(false);
+        return;
+      }
+      console.log('✅ Required fields validation passed');
+
       // Get the selected service to extract the title
       const selectedService = services?.find((s) => s.id === selectedServiceId);
+      console.log('🔍 Selected service:', selectedService);
 
       // Get current UTM tracking data from session
+      console.log('🔍 Getting tracking data...');
       const trackingData = getTrackingDataForSubmission();
+      console.log('📊 Tracking data:', trackingData);
 
       const submissionData = {
         ...data,
@@ -406,6 +432,9 @@ export function EnhancedContactForm(): React.JSX.Element {
         landingPageUrl: trackingData.landing_page_url,
       };
 
+      console.log('📦 Submission data prepared:', submissionData);
+      console.log('🌐 Making API request to /api/contact...');
+
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: {
@@ -414,40 +443,57 @@ export function EnhancedContactForm(): React.JSX.Element {
         body: JSON.stringify(submissionData),
       });
 
+      console.log('📡 API response received:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
+      });
+
       // Handle response parsing with error handling
+      console.log('🔍 Parsing response...');
       let result: ContactFormResponse;
       try {
         result = await response.json();
+        console.log('✅ Response parsed successfully:', result);
       } catch (parseError) {
-        console.error("Failed to parse response:", parseError);
+        console.error("❌ Failed to parse response:", parseError);
         throw new Error("Invalid response from server");
       }
 
       if (!response.ok) {
+        console.log('❌ Response not OK, handling error...');
         if (response.status === HTTP_STATUS.TOO_MANY_REQUESTS) {
+          console.log('⚠️ Rate limit exceeded');
           toast.error(ERROR_MESSAGES.RATE_LIMIT_EXCEEDED, {
             description:
               result.message || ERROR_MESSAGES.RATE_LIMIT_DESCRIPTION,
           });
+          setIsSubmitting(false);
           return;
         }
 
         if (response.status === HTTP_STATUS.BAD_REQUEST) {
+          console.log('⚠️ Bad request - validation failed');
           toast.error(ERROR_MESSAGES.VALIDATION_FAILED, {
             description: result.error || ERROR_MESSAGES.VALIDATION_DESCRIPTION,
           });
+          setIsSubmitting(false);
           return;
         }
 
+        console.log('❌ Other error:', result.error);
         throw new Error(result.error || ERROR_MESSAGES.SEND_FAILED);
       }
 
+      console.log('🎉 Success! Showing success message...');
       toast.success(SUCCESS_MESSAGES.MESSAGE_SENT, {
         description: result.message || SUCCESS_MESSAGES.RESPONSE_DESCRIPTION,
       });
 
+      console.log('📊 Tracking form completion...');
       analytics.trackContact.formComplete();
 
+      console.log('🔄 Resetting form state...');
       // Reset form state
       form.reset();
       setCurrentStep(1);
@@ -457,10 +503,11 @@ export function EnhancedContactForm(): React.JSX.Element {
       setHasStartedForm(false);
       clearFilters();
 
+      console.log('🎯 Redirecting to thank you page...');
       // Redirect to thank you page after a short delay
       router.push("/thank-you");
     } catch (error) {
-      console.error("Contact form error:", error);
+      console.error("❌ Contact form error:", error);
 
       const errorMessage =
         error instanceof Error ? error.message : ERROR_MESSAGES.GENERIC_ERROR;
@@ -477,6 +524,7 @@ export function EnhancedContactForm(): React.JSX.Element {
             : ERROR_MESSAGES.RETRY_DESCRIPTION,
       });
     } finally {
+      console.log('🔄 Finally block: setting isSubmitting to false');
       setIsSubmitting(false);
     }
   };
@@ -1022,6 +1070,7 @@ export function EnhancedContactForm(): React.JSX.Element {
                         type="submit"
                         disabled={isSubmitting || !isStepValid(currentStep)}
                         className="flex items-center"
+                        onClick={() => console.log('🖱️ Submit button clicked', { isSubmitting, isStepValid: isStepValid(currentStep) })}
                       >
                         {isSubmitting ? (
                           <>
