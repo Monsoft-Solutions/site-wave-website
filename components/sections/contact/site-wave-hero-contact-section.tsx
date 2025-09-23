@@ -80,6 +80,8 @@ const consultationBenefits = [
 export function SiteWaveHeroContactSection() {
   const [currentTime, setCurrentTime] = useState<string>("");
   const [isBusinessHours, setIsBusinessHours] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  const [wavePositions, setWavePositions] = useState<{ x: number; y: number }[]>([]);
 
   const [ref, inView] = useInView({
     threshold: 0.3,
@@ -132,6 +134,18 @@ export function SiteWaveHeroContactSection() {
     },
   ];
 
+  // Initialize client-side state and wave positions
+  useEffect(() => {
+    setIsClient(true);
+
+    // Generate wave positions on client-side only
+    const positions = Array.from({ length: 10 }, () => ({
+      x: Math.random() * (window.innerWidth || 1200),
+      y: Math.random() * (window.innerHeight || 800),
+    }));
+    setWavePositions(positions);
+  }, []);
+
   // Update time and business hours status
   useEffect(() => {
     const updateTime = () => {
@@ -170,19 +184,13 @@ export function SiteWaveHeroContactSection() {
 
       {/* Floating Wave Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(10)].map((_, i) => (
+        {isClient && wavePositions.map((position, i) => (
           <FloatingWave
             key={i}
             delay={i * 1.2}
             duration={8 + i * 2}
-            x={
-              Math.random() *
-              (typeof window !== "undefined" ? window.innerWidth : 1200)
-            }
-            y={
-              Math.random() *
-              (typeof window !== "undefined" ? window.innerHeight : 800)
-            }
+            x={position.x}
+            y={position.y}
           />
         ))}
       </div>

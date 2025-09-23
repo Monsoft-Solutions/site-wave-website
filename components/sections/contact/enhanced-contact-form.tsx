@@ -553,7 +553,7 @@ export function EnhancedContactForm(): React.JSX.Element {
               </div>
             </div>
 
-            <CardContent className="p-8">
+            <CardContent className="py-8 p-0 class-name">
               <FormProvider {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)}>
                   <AnimatePresence mode="wait">
