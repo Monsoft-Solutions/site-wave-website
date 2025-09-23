@@ -127,7 +127,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               timestamp: new Date().toISOString(),
               companyName: "Site Wave",
               supportEmail: "support@monsoftlabs.com",
-              siteUrl: "https://sitewave.com",
+              siteUrl: "https://sitewavefl.com",
             },
             {
               to: recipient,

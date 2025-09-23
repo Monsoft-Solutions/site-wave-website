@@ -311,10 +311,10 @@ export async function GET(request: NextRequest) {
       sortBy === "title"
         ? services.title
         : sortBy === "category"
-        ? services.category
-        : sortBy === "timeline"
-        ? services.timeline
-        : services.createdAt;
+          ? services.category
+          : sortBy === "timeline"
+            ? services.timeline
+            : services.createdAt;
 
     const orderByClause =
       sortOrder === "asc" ? asc(orderByField) : desc(orderByField);
@@ -520,47 +520,58 @@ export async function DELETE(request: NextRequest) {
  * Helper function to delete a service with all its relations
  */
 async function deleteServiceWithRelations(serviceId: string) {
-  // Delete all related data first
-  await Promise.all([
-    db.delete(serviceFeatures).where(eq(serviceFeatures.serviceId, serviceId)),
-    db.delete(serviceBenefits).where(eq(serviceBenefits.serviceId, serviceId)),
-    db
-      .delete(serviceProcessSteps)
-      .where(eq(serviceProcessSteps.serviceId, serviceId)),
-    db
-      .delete(serviceTechnologies)
-      .where(eq(serviceTechnologies.serviceId, serviceId)),
-    db
-      .delete(serviceDeliverables)
-      .where(eq(serviceDeliverables.serviceId, serviceId)),
-    db
-      .delete(serviceGalleryImages)
-      .where(eq(serviceGalleryImages.serviceId, serviceId)),
-    db
-      .delete(serviceTestimonials)
-      .where(eq(serviceTestimonials.serviceId, serviceId)),
-    db.delete(serviceFaqs).where(eq(serviceFaqs.serviceId, serviceId)),
-    db.delete(serviceRelated).where(eq(serviceRelated.serviceId, serviceId)),
-  ]);
+  await db.transaction(async (tx) => {
+    // Delete all related data first
+    await Promise.all([
+      tx
+        .delete(serviceFeatures)
+        .where(eq(serviceFeatures.serviceId, serviceId)),
+      tx
+        .delete(serviceBenefits)
+        .where(eq(serviceBenefits.serviceId, serviceId)),
+      tx
+        .delete(serviceProcessSteps)
+        .where(eq(serviceProcessSteps.serviceId, serviceId)),
+      tx
+        .delete(serviceTechnologies)
+        .where(eq(serviceTechnologies.serviceId, serviceId)),
+      tx
+        .delete(serviceDeliverables)
+        .where(eq(serviceDeliverables.serviceId, serviceId)),
+      tx
+        .delete(serviceGalleryImages)
+        .where(eq(serviceGalleryImages.serviceId, serviceId)),
+      tx
+        .delete(serviceTestimonials)
+        .where(eq(serviceTestimonials.serviceId, serviceId)),
+      tx.delete(serviceFaqs).where(eq(serviceFaqs.serviceId, serviceId)),
+      // Delete records where this service is the main service
+      tx.delete(serviceRelated).where(eq(serviceRelated.serviceId, serviceId)),
+      // Delete records where this service is referenced as a related service
+      tx
+        .delete(serviceRelated)
+        .where(eq(serviceRelated.relatedServiceId, serviceId)),
+    ]);
 
-  // Delete pricing features first, then pricing tiers
-  const pricingTiers = await db
-    .select()
-    .from(servicePricingTiers)
-    .where(eq(servicePricingTiers.serviceId, serviceId));
+    // Delete pricing features first, then pricing tiers
+    const pricingTiers = await tx
+      .select()
+      .from(servicePricingTiers)
+      .where(eq(servicePricingTiers.serviceId, serviceId));
 
-  for (const tier of pricingTiers) {
-    await db
-      .delete(servicePricingFeatures)
-      .where(eq(servicePricingFeatures.pricingTierId, tier.id));
-  }
+    for (const tier of pricingTiers) {
+      await tx
+        .delete(servicePricingFeatures)
+        .where(eq(servicePricingFeatures.pricingTierId, tier.id));
+    }
 
-  await db
-    .delete(servicePricingTiers)
-    .where(eq(servicePricingTiers.serviceId, serviceId));
+    await tx
+      .delete(servicePricingTiers)
+      .where(eq(servicePricingTiers.serviceId, serviceId));
 
-  // Finally, delete the service itself
-  await db.delete(services).where(eq(services.id, serviceId));
+    // Finally, delete the service itself
+    await tx.delete(services).where(eq(services.id, serviceId));
+  });
 }
 
 export type { AdminServicesListResponse };

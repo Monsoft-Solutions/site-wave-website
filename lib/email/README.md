@@ -66,7 +66,7 @@ const result = await emailService.sendTemplatedEmail(
     submittedAt: new Date().toISOString(),
     companyName: "Site Wave",
     supportEmail: "support@monsoftlabs.com",
-    siteUrl: "https://sitewave.com",
+    siteUrl: "https://sitewavefl.com",
   },
   {
     to: "admin@yourdomain.com",
@@ -85,7 +85,7 @@ const invitationResult = await emailService.sendTemplatedEmail(
     expiresAt: new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString(),
     companyName: "Site Wave",
     supportEmail: "support@monsoftlabs.com",
-    siteUrl: "https://sitewave.com",
+    siteUrl: "https://sitewavefl.com",
   },
   {
     to: "jane@example.com",
@@ -102,7 +102,7 @@ const notificationResult = await emailService.sendTemplatedEmail(
     timestamp: new Date().toISOString(),
     companyName: "Site Wave",
     supportEmail: "support@monsoftlabs.com",
-    siteUrl: "https://sitewave.com",
+    siteUrl: "https://sitewavefl.com",
   },
   {
     to: "user@example.com",

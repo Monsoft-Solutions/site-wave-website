@@ -163,146 +163,149 @@ export async function PUT(
       );
     }
 
-    // Update the service
-    await db
-      .update(services)
-      .set({
-        title: data.title,
-        slug: data.slug,
-        shortDescription: data.shortDescription,
-        fullDescription: data.fullDescription,
-        timeline: data.timeline,
-        category: data.category,
-        status: data.status,
-        featuredImage: data.featuredImage,
-        updatedAt: new Date(),
-      })
-      .where(eq(services.id, id));
+    // Wrap the entire update operation in a transaction
+    await db.transaction(async (tx) => {
+      // Update the service
+      await tx
+        .update(services)
+        .set({
+          title: data.title,
+          slug: data.slug,
+          shortDescription: data.shortDescription,
+          fullDescription: data.fullDescription,
+          timeline: data.timeline,
+          category: data.category,
+          status: data.status,
+          featuredImage: data.featuredImage,
+          updatedAt: new Date(),
+        })
+        .where(eq(services.id, id));
 
-    // Delete existing related data and recreate
-    await deleteServiceRelations(id);
+      // Delete existing related data
+      await deleteServiceRelationsInTransaction(tx, id);
 
-    // Insert updated related data
-    if (data.features && data.features.length > 0) {
-      await db.insert(serviceFeatures).values(
-        data.features.map((feature: string, index: number) => ({
-          serviceId: id,
-          feature,
-          order: index + 1,
-        }))
-      );
-    }
-
-    if (data.benefits && data.benefits.length > 0) {
-      await db.insert(serviceBenefits).values(
-        data.benefits.map((benefit: string, index: number) => ({
-          serviceId: id,
-          benefit,
-          order: index + 1,
-        }))
-      );
-    }
-
-    if (data.technologies && data.technologies.length > 0) {
-      await db.insert(serviceTechnologies).values(
-        data.technologies.map((technology: string, index: number) => ({
-          serviceId: id,
-          technology,
-          order: index + 1,
-        }))
-      );
-    }
-
-    if (data.deliverables && data.deliverables.length > 0) {
-      await db.insert(serviceDeliverables).values(
-        data.deliverables.map((deliverable: string, index: number) => ({
-          serviceId: id,
-          deliverable,
-          order: index + 1,
-        }))
-      );
-    }
-
-    if (data.process && data.process.length > 0) {
-      await db.insert(serviceProcessSteps).values(
-        data.process.map((step: ProcessStepData) => ({
-          serviceId: id,
-          step: step.step,
-          title: step.title,
-          description: step.description,
-          duration: step.duration,
-        }))
-      );
-    }
-
-    if (data.faq && data.faq.length > 0) {
-      await db.insert(serviceFaqs).values(
-        data.faq.map((faq: FAQData, index: number) => ({
-          serviceId: id,
-          question: faq.question,
-          answer: faq.answer,
-          order: index + 1,
-        }))
-      );
-    }
-
-    if (data.gallery && data.gallery.length > 0) {
-      await db.insert(serviceGalleryImages).values(
-        data.gallery.map((imageUrl: string, index: number) => ({
-          serviceId: id,
-          imageUrl,
-          order: index + 1,
-        }))
-      );
-    }
-
-    if (data.testimonials && data.testimonials.length > 0) {
-      await db.insert(serviceTestimonials).values(
-        data.testimonials.map((testimonial: TestimonialData) => ({
-          serviceId: id,
-          quote: testimonial.quote,
-          author: testimonial.author,
-          company: testimonial.company,
-          avatar: testimonial.avatar,
-        }))
-      );
-    }
-
-    if (data.pricing && data.pricing.length > 0) {
-      for (const tier of data.pricing) {
-        const [pricingTier] = await db
-          .insert(servicePricingTiers)
-          .values({
+      // Insert updated related data
+      if (data.features && data.features.length > 0) {
+        await tx.insert(serviceFeatures).values(
+          data.features.map((feature: string, index: number) => ({
             serviceId: id,
-            name: tier.name,
-            price: tier.price,
-            description: tier.description,
-            popular: tier.popular || false,
-            order: data.pricing.indexOf(tier) + 1,
-          })
-          .returning();
+            feature,
+            order: index + 1,
+          }))
+        );
+      }
 
-        if (tier.features && tier.features.length > 0) {
-          await db.insert(servicePricingFeatures).values(
-            tier.features.map((feature: string, index: number) => ({
-              pricingTierId: pricingTier.id,
-              feature,
-              order: index + 1,
-            }))
-          );
+      if (data.benefits && data.benefits.length > 0) {
+        await tx.insert(serviceBenefits).values(
+          data.benefits.map((benefit: string, index: number) => ({
+            serviceId: id,
+            benefit,
+            order: index + 1,
+          }))
+        );
+      }
+
+      if (data.technologies && data.technologies.length > 0) {
+        await tx.insert(serviceTechnologies).values(
+          data.technologies.map((technology: string, index: number) => ({
+            serviceId: id,
+            technology,
+            order: index + 1,
+          }))
+        );
+      }
+
+      if (data.deliverables && data.deliverables.length > 0) {
+        await tx.insert(serviceDeliverables).values(
+          data.deliverables.map((deliverable: string, index: number) => ({
+            serviceId: id,
+            deliverable,
+            order: index + 1,
+          }))
+        );
+      }
+
+      if (data.process && data.process.length > 0) {
+        await tx.insert(serviceProcessSteps).values(
+          data.process.map((step: ProcessStepData) => ({
+            serviceId: id,
+            step: step.step,
+            title: step.title,
+            description: step.description,
+            duration: step.duration,
+          }))
+        );
+      }
+
+      if (data.faq && data.faq.length > 0) {
+        await tx.insert(serviceFaqs).values(
+          data.faq.map((faq: FAQData, index: number) => ({
+            serviceId: id,
+            question: faq.question,
+            answer: faq.answer,
+            order: index + 1,
+          }))
+        );
+      }
+
+      if (data.gallery && data.gallery.length > 0) {
+        await tx.insert(serviceGalleryImages).values(
+          data.gallery.map((imageUrl: string, index: number) => ({
+            serviceId: id,
+            imageUrl,
+            order: index + 1,
+          }))
+        );
+      }
+
+      if (data.testimonials && data.testimonials.length > 0) {
+        await tx.insert(serviceTestimonials).values(
+          data.testimonials.map((testimonial: TestimonialData) => ({
+            serviceId: id,
+            quote: testimonial.quote,
+            author: testimonial.author,
+            company: testimonial.company,
+            avatar: testimonial.avatar,
+          }))
+        );
+      }
+
+      if (data.pricing && data.pricing.length > 0) {
+        for (const tier of data.pricing) {
+          const [pricingTier] = await tx
+            .insert(servicePricingTiers)
+            .values({
+              serviceId: id,
+              name: tier.name,
+              price: tier.price,
+              description: tier.description,
+              popular: tier.popular || false,
+              order: data.pricing.indexOf(tier) + 1,
+            })
+            .returning();
+
+          if (tier.features && tier.features.length > 0) {
+            await tx.insert(servicePricingFeatures).values(
+              tier.features.map((feature: string, index: number) => ({
+                pricingTierId: pricingTier.id,
+                feature,
+                order: index + 1,
+              }))
+            );
+          }
         }
       }
-    }
 
-    // Insert related services
-    if (data.relatedServices && data.relatedServices.length > 0) {
-      await db.insert(serviceRelated).values(
-        data.relatedServices.map((relatedServiceId: string) => ({
-          serviceId: id,
-          relatedServiceId,
-        }))
-      );
-    }
+      // Insert related services
+      if (data.relatedServices && data.relatedServices.length > 0) {
+        await tx.insert(serviceRelated).values(
+          data.relatedServices.map((relatedServiceId: string) => ({
+            serviceId: id,
+            relatedServiceId,
+          }))
+        );
+      }
+    });
 
     // Notify Google about the service update (async - doesn't block response)
     notifyContentUpdate("service", data.slug, "URL_UPDATED");
@@ -405,90 +408,105 @@ export async function DELETE(
  * Helper function to delete a service with all its relations
  */
 async function deleteServiceWithRelations(serviceId: string) {
-  // Delete all related data first
-  await Promise.all([
-    db.delete(serviceFeatures).where(eq(serviceFeatures.serviceId, serviceId)),
-    db.delete(serviceBenefits).where(eq(serviceBenefits.serviceId, serviceId)),
-    db
-      .delete(serviceProcessSteps)
-      .where(eq(serviceProcessSteps.serviceId, serviceId)),
-    db
-      .delete(serviceTechnologies)
-      .where(eq(serviceTechnologies.serviceId, serviceId)),
-    db
-      .delete(serviceDeliverables)
-      .where(eq(serviceDeliverables.serviceId, serviceId)),
-    db
-      .delete(serviceGalleryImages)
-      .where(eq(serviceGalleryImages.serviceId, serviceId)),
-    db
-      .delete(serviceTestimonials)
-      .where(eq(serviceTestimonials.serviceId, serviceId)),
-    db.delete(serviceFaqs).where(eq(serviceFaqs.serviceId, serviceId)),
-    db.delete(serviceRelated).where(eq(serviceRelated.serviceId, serviceId)),
-  ]);
+  await db.transaction(async (tx) => {
+    // Delete all related data first
+    await Promise.all([
+      tx
+        .delete(serviceFeatures)
+        .where(eq(serviceFeatures.serviceId, serviceId)),
+      tx
+        .delete(serviceBenefits)
+        .where(eq(serviceBenefits.serviceId, serviceId)),
+      tx
+        .delete(serviceProcessSteps)
+        .where(eq(serviceProcessSteps.serviceId, serviceId)),
+      tx
+        .delete(serviceTechnologies)
+        .where(eq(serviceTechnologies.serviceId, serviceId)),
+      tx
+        .delete(serviceDeliverables)
+        .where(eq(serviceDeliverables.serviceId, serviceId)),
+      tx
+        .delete(serviceGalleryImages)
+        .where(eq(serviceGalleryImages.serviceId, serviceId)),
+      tx
+        .delete(serviceTestimonials)
+        .where(eq(serviceTestimonials.serviceId, serviceId)),
+      tx.delete(serviceFaqs).where(eq(serviceFaqs.serviceId, serviceId)),
+      // Delete records where this service is the main service
+      tx.delete(serviceRelated).where(eq(serviceRelated.serviceId, serviceId)),
+      // Delete records where this service is referenced as a related service
+      tx
+        .delete(serviceRelated)
+        .where(eq(serviceRelated.relatedServiceId, serviceId)),
+    ]);
 
-  // Delete pricing features first, then pricing tiers
-  const pricingTiers = await db
-    .select()
-    .from(servicePricingTiers)
-    .where(eq(servicePricingTiers.serviceId, serviceId));
+    // Delete pricing features first, then pricing tiers
+    const pricingTiers = await tx
+      .select()
+      .from(servicePricingTiers)
+      .where(eq(servicePricingTiers.serviceId, serviceId));
 
-  for (const tier of pricingTiers) {
-    await db
-      .delete(servicePricingFeatures)
-      .where(eq(servicePricingFeatures.pricingTierId, tier.id));
-  }
+    for (const tier of pricingTiers) {
+      await tx
+        .delete(servicePricingFeatures)
+        .where(eq(servicePricingFeatures.pricingTierId, tier.id));
+    }
 
-  await db
-    .delete(servicePricingTiers)
-    .where(eq(servicePricingTiers.serviceId, serviceId));
+    await tx
+      .delete(servicePricingTiers)
+      .where(eq(servicePricingTiers.serviceId, serviceId));
 
-  // Finally, delete the service itself
-  await db.delete(services).where(eq(services.id, serviceId));
+    // Finally, delete the service itself
+    await tx.delete(services).where(eq(services.id, serviceId));
+  });
 }
 
 /**
- * Helper function to delete only service relations (for updates)
+ * Helper function to delete service relations within an existing transaction
  */
-async function deleteServiceRelations(serviceId: string) {
+async function deleteServiceRelationsInTransaction(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tx: any, // Drizzle transaction instance
+  serviceId: string
+) {
   // Get pricing tiers first to delete their features
-  const pricingTiers = await db
+  const pricingTiers = await tx
     .select()
     .from(servicePricingTiers)
     .where(eq(servicePricingTiers.serviceId, serviceId));
 
   // Delete pricing features first
   for (const tier of pricingTiers) {
-    await db
+    await tx
       .delete(servicePricingFeatures)
       .where(eq(servicePricingFeatures.pricingTierId, tier.id));
   }
 
   // Delete all related data
   await Promise.all([
-    db.delete(serviceFeatures).where(eq(serviceFeatures.serviceId, serviceId)),
-    db.delete(serviceBenefits).where(eq(serviceBenefits.serviceId, serviceId)),
-    db
+    tx.delete(serviceFeatures).where(eq(serviceFeatures.serviceId, serviceId)),
+    tx.delete(serviceBenefits).where(eq(serviceBenefits.serviceId, serviceId)),
+    tx
       .delete(serviceProcessSteps)
       .where(eq(serviceProcessSteps.serviceId, serviceId)),
-    db
+    tx
       .delete(serviceTechnologies)
       .where(eq(serviceTechnologies.serviceId, serviceId)),
-    db
+    tx
       .delete(serviceDeliverables)
       .where(eq(serviceDeliverables.serviceId, serviceId)),
-    db
+    tx
       .delete(serviceGalleryImages)
       .where(eq(serviceGalleryImages.serviceId, serviceId)),
-    db
+    tx
       .delete(serviceTestimonials)
       .where(eq(serviceTestimonials.serviceId, serviceId)),
-    db.delete(serviceFaqs).where(eq(serviceFaqs.serviceId, serviceId)),
-    db.delete(serviceRelated).where(eq(serviceRelated.serviceId, serviceId)),
-    db
+    tx.delete(serviceFaqs).where(eq(serviceFaqs.serviceId, serviceId)),
+    // Delete records where this service is the main service
+    tx.delete(serviceRelated).where(eq(serviceRelated.serviceId, serviceId)),
+    tx
       .delete(servicePricingTiers)
       .where(eq(servicePricingTiers.serviceId, serviceId)),
-    db.delete(serviceRelated).where(eq(serviceRelated.serviceId, serviceId)),
   ]);
 }

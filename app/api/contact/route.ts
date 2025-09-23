@@ -300,7 +300,7 @@ export async function POST(request: NextRequest) {
           submittedAt: new Date().toISOString(),
           companyName: "Site Wave",
           supportEmail: "support@monsoftlabs.com",
-          siteUrl: "https://sitewave.com",
+          siteUrl: "https://sitewavefl.com",
         },
         {
           to: email,
@@ -318,7 +318,7 @@ export async function POST(request: NextRequest) {
           submittedAt: new Date().toISOString(),
           companyName: "Site Wave",
           supportEmail: "support@monsoftlabs.com",
-          siteUrl: "https://sitewave.com",
+          siteUrl: "https://sitewavefl.com",
           ipAddress: clientIp !== "unknown" ? clientIp : undefined,
           userAgent: userAgent || undefined,
         },
