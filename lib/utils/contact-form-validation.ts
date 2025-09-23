@@ -77,10 +77,7 @@ export const contactFormSchema = z
   .object({
     name: nameSchema,
     email: emailSchema,
-    subject: z
-      .string()
-      .min(1, validationMessages.required("Subject"))
-      .optional(),
+    subject: z.string().optional(),
     message: z
       .string()
       .min(1, validationMessages.required("Message"))
