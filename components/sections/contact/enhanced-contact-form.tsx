@@ -1067,10 +1067,15 @@ export function EnhancedContactForm(): React.JSX.Element {
                       </Button>
                     ) : (
                       <Button
-                        type="submit"
+                        type="button"
                         disabled={isSubmitting || !isStepValid(currentStep)}
                         className="flex items-center"
-                        onClick={() => console.log('🖱️ Submit button clicked', { isSubmitting, isStepValid: isStepValid(currentStep) })}
+                        onClick={async () => {
+                          console.log('🖱️ Submit button clicked', { isSubmitting, isStepValid: isStepValid(currentStep) });
+                          const formData = form.getValues();
+                          console.log('📋 Form data retrieved:', formData);
+                          await onSubmit(formData);
+                        }}
                       >
                         {isSubmitting ? (
                           <>
