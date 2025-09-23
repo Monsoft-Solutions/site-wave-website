@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
@@ -47,8 +46,6 @@ import {
 // Form configuration constants
 const FORM_CONFIG = {
   TOTAL_STEPS: 4,
-  ANIMATION_DURATION: 0.3,
-  PROGRESS_TRANSITION_DURATION: 0.5,
   FEATURED_SERVICES_COUNT: 6,
 } as const;
 
@@ -368,10 +365,21 @@ export function EnhancedContactForm(): React.JSX.Element {
    * Handle form submission
    */
   const onSubmit = async (data: EnhancedContactFormData): Promise<void> => {
+    // Prevent double submission
+    if (isSubmitting) {
+      return;
+    }
+
     setIsSubmitting(true);
     analytics.trackContact.formSubmit();
 
     try {
+      // Validate required fields before submission
+      if (!selectedServiceId || !selectedBudget || !selectedTimeline) {
+        toast.error("Please complete all required fields");
+        return;
+      }
+
       // Get the selected service to extract the title
       const selectedService = services?.find((s) => s.id === selectedServiceId);
 
@@ -446,12 +454,11 @@ export function EnhancedContactForm(): React.JSX.Element {
       setSelectedServiceId("");
       setSelectedBudget("");
       setSelectedTimeline("");
+      setHasStartedForm(false);
       clearFilters();
 
       // Redirect to thank you page after a short delay
-      setTimeout(() => {
-        router.push("/thank-you");
-      }, 1500);
+      router.push("/thank-you");
     } catch (error) {
       console.error("Contact form error:", error);
 
@@ -492,26 +499,12 @@ export function EnhancedContactForm(): React.JSX.Element {
     }
   };
 
-  /**
-   * Animation variants for step transitions
-   */
-  const stepVariants = {
-    hidden: { opacity: 0, x: 50 },
-    visible: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -50 },
-  };
-
   return (
     <section className="py-20 bg-gradient-to-br from-muted/5 via-background to-accent/5">
       <div className="container">
         <div className="mx-auto max-w-4xl">
           {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-12"
-          >
+          <div className="text-center mb-12">
             <Badge variant="outline" className="mb-4">
               <MessageSquare className="w-3 h-3 mr-1" />
               Tell Us About Your Project
@@ -524,7 +517,7 @@ export function EnhancedContactForm(): React.JSX.Element {
               your needs so we can provide the most relevant information and
               next steps.
             </p>
-          </motion.div>
+          </div>
 
           <Card className="glass-card overflow-hidden">
             {/* Progress Bar */}
@@ -539,15 +532,10 @@ export function EnhancedContactForm(): React.JSX.Element {
                 </span>
               </div>
               <div className="relative h-2 bg-muted rounded-full overflow-hidden">
-                <motion.div
-                  className="absolute top-0 left-0 h-full bg-primary rounded-full"
-                  initial={{ width: "0%" }}
-                  animate={{
+                <div
+                  className="absolute top-0 left-0 h-full bg-primary rounded-full transition-all duration-500 ease-in-out"
+                  style={{
                     width: `${(currentStep / FORM_CONFIG.TOTAL_STEPS) * 100}%`,
-                  }}
-                  transition={{
-                    duration: FORM_CONFIG.PROGRESS_TRANSITION_DURATION,
-                    ease: "easeInOut",
                   }}
                 />
               </div>
@@ -555,512 +543,456 @@ export function EnhancedContactForm(): React.JSX.Element {
 
             <CardContent className="py-8 p-0 class-name">
               <FormProvider {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)}>
-                  <AnimatePresence mode="wait">
-                    {/* Step 1: Project Type with Enhanced Filtering */}
-                    {currentStep === 1 && (
-                      <motion.div
-                        key="step1"
-                        variants={stepVariants}
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                        transition={{
-                          duration: FORM_CONFIG.ANIMATION_DURATION,
-                        }}
-                        className="space-y-6"
-                      >
-                        <div className="text-center mb-8">
-                          <Briefcase className="w-12 h-12 text-primary mx-auto mb-4" />
-                          <h3 className="text-xl font-semibold mb-2">
-                            What type of project do you have in mind?
-                          </h3>
-                          <p className="text-muted-foreground">
-                            This helps us understand your needs better
+                <form onSubmit={form.handleSubmit(onSubmit)} className="px-6">
+                  {/* Step 1: Project Type with Enhanced Filtering */}
+                  {currentStep === 1 && (
+                    <div className="space-y-6">
+                      <div className="text-center mb-8">
+                        <Briefcase className="w-12 h-12 text-primary mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold mb-2">
+                          What type of project do you have in mind?
+                        </h3>
+                        <p className="text-muted-foreground">
+                          This helps us understand your needs better
+                        </p>
+                      </div>
+
+                      {servicesLoading ? (
+                        <div className="flex justify-center items-center py-8">
+                          <LoadingSpinner className="mr-2" />
+                          <span>Loading services...</span>
+                        </div>
+                      ) : servicesError ? (
+                        <div className="text-center py-8 text-red-500">
+                          <p>
+                            Failed to load services. Please try again later.
                           </p>
                         </div>
+                      ) : (
+                        <>
+                          {/* Search and Filter Section */}
+                          <div className="space-y-4 mb-8">
+                            {/* Search Bar */}
+                            <div className="relative">
+                              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                              <Input
+                                type="text"
+                                placeholder="Search services..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-10 pr-10"
+                              />
+                              {searchQuery && (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
+                                  onClick={() => setSearchQuery("")}
+                                >
+                                  <X className="w-4 h-4" />
+                                </Button>
+                              )}
+                            </div>
 
-                        {servicesLoading ? (
-                          <div className="flex justify-center items-center py-8">
-                            <LoadingSpinner className="mr-2" />
-                            <span>Loading services...</span>
-                          </div>
-                        ) : servicesError ? (
-                          <div className="text-center py-8 text-red-500">
-                            <p>
-                              Failed to load services. Please try again later.
-                            </p>
-                          </div>
-                        ) : (
-                          <>
-                            {/* Search and Filter Section */}
-                            <div className="space-y-4 mb-8">
-                              {/* Search Bar */}
-                              <div className="relative">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                                <Input
-                                  type="text"
-                                  placeholder="Search services..."
-                                  value={searchQuery}
-                                  onChange={(e) =>
-                                    setSearchQuery(e.target.value)
-                                  }
-                                  className="pl-10 pr-10"
-                                />
-                                {searchQuery && (
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
-                                    onClick={() => setSearchQuery("")}
-                                  >
-                                    <X className="w-4 h-4" />
-                                  </Button>
-                                )}
-                              </div>
-
-                              {/* Category Filters */}
-                              <div className="flex flex-wrap justify-center gap-2">
+                            {/* Category Filters */}
+                            <div className="flex flex-wrap justify-center gap-2">
+                              <Badge
+                                variant={
+                                  selectedCategory === null
+                                    ? "default"
+                                    : "secondary"
+                                }
+                                className={`cursor-pointer px-4 py-2 text-sm transition-all font-medium ${
+                                  selectedCategory === null
+                                    ? "bg-primary text-white hover:bg-primary/90"
+                                    : "bg-background hover:bg-primary/10 text-muted-foreground hover:text-primary"
+                                }`}
+                                onClick={() => handleCategoryChange(null)}
+                              >
+                                All Services
+                                {selectedCategory === null &&
+                                  viewMode === "featured" && (
+                                    <span className="ml-1 text-xs opacity-80">
+                                      (Featured)
+                                    </span>
+                                  )}
+                              </Badge>
+                              {categories.map((category: string) => (
                                 <Badge
+                                  key={category}
                                   variant={
-                                    selectedCategory === null
+                                    selectedCategory === category
                                       ? "default"
                                       : "secondary"
                                   }
                                   className={`cursor-pointer px-4 py-2 text-sm transition-all font-medium ${
-                                    selectedCategory === null
+                                    selectedCategory === category
                                       ? "bg-primary text-white hover:bg-primary/90"
                                       : "bg-background hover:bg-primary/10 text-muted-foreground hover:text-primary"
                                   }`}
-                                  onClick={() => handleCategoryChange(null)}
+                                  onClick={() => handleCategoryChange(category)}
                                 >
-                                  All Services
-                                  {selectedCategory === null &&
-                                    viewMode === "featured" && (
-                                      <span className="ml-1 text-xs opacity-80">
-                                        (Featured)
-                                      </span>
-                                    )}
+                                  <span className="mr-1">
+                                    {categoryIcons[category] || "🔧"}
+                                  </span>
+                                  {category}
                                 </Badge>
-                                {categories.map((category: string) => (
-                                  <Badge
-                                    key={category}
-                                    variant={
-                                      selectedCategory === category
-                                        ? "default"
-                                        : "secondary"
-                                    }
-                                    className={`cursor-pointer px-4 py-2 text-sm transition-all font-medium ${
-                                      selectedCategory === category
-                                        ? "bg-primary text-white hover:bg-primary/90"
-                                        : "bg-background hover:bg-primary/10 text-muted-foreground hover:text-primary"
-                                    }`}
-                                    onClick={() =>
-                                      handleCategoryChange(category)
-                                    }
-                                  >
-                                    <span className="mr-1">
-                                      {categoryIcons[category] || "🔧"}
-                                    </span>
-                                    {category}
-                                  </Badge>
-                                ))}
-                              </div>
-
-                              {/* Results Count */}
-                              <div className="flex justify-between items-center text-sm text-muted-foreground">
-                                <span>
-                                  {searchQuery.trim() ? (
-                                    `Found ${filteredServices.services.length} service${filteredServices.services.length !== 1 ? "s" : ""} for "${searchQuery}"`
-                                  ) : viewMode === "featured" &&
-                                    !selectedCategory ? (
-                                    <>
-                                      Showing {filteredServices.services.length}{" "}
-                                      featured services
-                                      {filteredServices.remainingCount > 0 && (
-                                        <span>
-                                          {" "}
-                                          • {
-                                            filteredServices.remainingCount
-                                          }{" "}
-                                          more available
-                                        </span>
-                                      )}
-                                    </>
-                                  ) : (
-                                    `Showing ${filteredServices.services.length} service${filteredServices.services.length !== 1 ? "s" : ""}`
-                                  )}
-                                </span>
-
-                                {(searchQuery.trim() || selectedCategory) && (
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={clearFilters}
-                                    className="gap-1 text-primary hover:text-primary hover:bg-primary/10"
-                                  >
-                                    <X className="w-3 h-3" />
-                                    Clear filters
-                                  </Button>
-                                )}
-                              </div>
+                              ))}
                             </div>
 
-                            {/* Services Grid */}
-                            {filteredServices.services.length > 0 ? (
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {filteredServices.services.map(
-                                  (service: ServiceWithRelations) => {
-                                    const ServiceIcon = getServiceIcon(
-                                      service.title,
-                                      service.category
-                                    );
-                                    const isPopular = isServicePopular(service);
+                            {/* Results Count */}
+                            <div className="flex justify-between items-center text-sm text-muted-foreground">
+                              <span>
+                                {searchQuery.trim() ? (
+                                  `Found ${filteredServices.services.length} service${filteredServices.services.length !== 1 ? "s" : ""} for "${searchQuery}"`
+                                ) : viewMode === "featured" &&
+                                  !selectedCategory ? (
+                                  <>
+                                    Showing {filteredServices.services.length}{" "}
+                                    featured services
+                                    {filteredServices.remainingCount > 0 && (
+                                      <span>
+                                        {" "}
+                                        • {filteredServices.remainingCount} more
+                                        available
+                                      </span>
+                                    )}
+                                  </>
+                                ) : (
+                                  `Showing ${filteredServices.services.length} service${filteredServices.services.length !== 1 ? "s" : ""}`
+                                )}
+                              </span>
 
-                                    return (
-                                      <motion.div
-                                        key={service.id}
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        className={`relative p-4 border-2 rounded-2xl cursor-pointer transition-all ${
-                                          selectedServiceId === service.id
-                                            ? "border-primary bg-primary/5"
-                                            : isPopular
-                                              ? "border-primary/30 bg-primary/5 hover:border-primary/50"
-                                              : "border-border hover:border-primary/50"
-                                        }`}
-                                        onClick={() =>
-                                          setSelectedServiceId(service.id)
-                                        }
-                                      >
-                                        {isPopular &&
-                                          selectedServiceId !== service.id && (
-                                            <div className="absolute -top-2 right-2 z-10">
-                                              <Badge
-                                                variant="secondary"
-                                                className="bg-orange-100 text-orange-600 border-orange-200 text-xs"
-                                              >
-                                                Popular
-                                              </Badge>
-                                            </div>
-                                          )}
+                              {(searchQuery.trim() || selectedCategory) && (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={clearFilters}
+                                  className="gap-1 text-primary hover:text-primary hover:bg-primary/10"
+                                >
+                                  <X className="w-3 h-3" />
+                                  Clear filters
+                                </Button>
+                              )}
+                            </div>
+                          </div>
 
-                                        <div className="flex items-start space-x-3">
-                                          <div
-                                            className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                                              isPopular
-                                                ? "bg-primary text-white"
-                                                : "bg-primary/10 text-primary"
-                                            }`}
-                                          >
-                                            <ServiceIcon className="w-5 h-5" />
+                          {/* Services Grid */}
+                          {filteredServices.services.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {filteredServices.services.map(
+                                (service: ServiceWithRelations) => {
+                                  const ServiceIcon = getServiceIcon(
+                                    service.title,
+                                    service.category
+                                  );
+                                  const isPopular = isServicePopular(service);
+
+                                  return (
+                                    <div
+                                      key={service.id}
+                                      className={`relative p-4 border-2 rounded-2xl cursor-pointer transition-all hover:scale-105 active:scale-95 ${
+                                        selectedServiceId === service.id
+                                          ? "border-primary bg-primary/5"
+                                          : isPopular
+                                            ? "border-primary/30 bg-primary/5 hover:border-primary/50"
+                                            : "border-border hover:border-primary/50"
+                                      }`}
+                                      onClick={() =>
+                                        setSelectedServiceId(service.id)
+                                      }
+                                    >
+                                      {isPopular &&
+                                        selectedServiceId !== service.id && (
+                                          <div className="absolute -top-2 right-2 z-10">
+                                            <Badge
+                                              variant="secondary"
+                                              className="bg-orange-100 text-orange-600 border-orange-200 text-xs"
+                                            >
+                                              Popular
+                                            </Badge>
                                           </div>
-                                          <div className="flex-1 min-w-0">
-                                            <h4 className="font-medium text-foreground mb-1">
-                                              {service.title}
-                                            </h4>
-                                            <p className="text-sm text-muted-foreground line-clamp-2">
-                                              {service.shortDescription}
-                                            </p>
-                                            <div className="flex items-center gap-2 mt-2">
-                                              <Badge
-                                                variant="outline"
-                                                className="text-xs"
-                                              >
-                                                {service.category}
-                                              </Badge>
-                                              {service.pricing?.[0]?.price && (
-                                                <span className="text-xs text-muted-foreground">
-                                                  From{" "}
-                                                  {service.pricing[0].price}
-                                                </span>
-                                              )}
-                                            </div>
+                                        )}
+
+                                      <div className="flex items-start space-x-3">
+                                        <div
+                                          className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                                            isPopular
+                                              ? "bg-primary text-white"
+                                              : "bg-primary/10 text-primary"
+                                          }`}
+                                        >
+                                          <ServiceIcon className="w-5 h-5" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <h4 className="font-medium text-foreground mb-1">
+                                            {service.title}
+                                          </h4>
+                                          <p className="text-sm text-muted-foreground line-clamp-2">
+                                            {service.shortDescription}
+                                          </p>
+                                          <div className="flex items-center gap-2 mt-2">
+                                            <Badge
+                                              variant="outline"
+                                              className="text-xs"
+                                            >
+                                              {service.category}
+                                            </Badge>
+                                            {service.pricing?.[0]?.price && (
+                                              <span className="text-xs text-muted-foreground">
+                                                From {service.pricing[0].price}
+                                              </span>
+                                            )}
                                           </div>
                                         </div>
-                                        {selectedServiceId === service.id && (
-                                          <CheckCircle className="absolute top-4 right-4 w-5 h-5 text-primary" />
-                                        )}
-                                      </motion.div>
-                                    );
-                                  }
-                                )}
+                                      </div>
+                                      {selectedServiceId === service.id && (
+                                        <CheckCircle className="absolute top-4 right-4 w-5 h-5 text-primary" />
+                                      )}
+                                    </div>
+                                  );
+                                }
+                              )}
+                            </div>
+                          ) : (
+                            /* No Services Found */
+                            <div className="text-center py-8">
+                              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                                <Search className="w-8 h-8 text-muted-foreground" />
                               </div>
-                            ) : (
-                              /* No Services Found */
-                              <div className="text-center py-8">
-                                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-                                  <Search className="w-8 h-8 text-muted-foreground" />
-                                </div>
-                                <h4 className="font-medium mb-2">
-                                  No services found
-                                </h4>
-                                <p className="text-sm text-muted-foreground mb-4">
-                                  {searchQuery.trim()
-                                    ? `No services match "${searchQuery}". Try a different search term or browse by category.`
-                                    : selectedCategory
-                                      ? `No services found in the ${selectedCategory} category.`
-                                      : "No services are currently available."}
-                                </p>
+                              <h4 className="font-medium mb-2">
+                                No services found
+                              </h4>
+                              <p className="text-sm text-muted-foreground mb-4">
+                                {searchQuery.trim()
+                                  ? `No services match "${searchQuery}". Try a different search term or browse by category.`
+                                  : selectedCategory
+                                    ? `No services found in the ${selectedCategory} category.`
+                                    : "No services are currently available."}
+                              </p>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={clearFilters}
+                                className="gap-2"
+                              >
+                                View All Services
+                              </Button>
+                            </div>
+                          )}
+
+                          {/* View All Services Button for Featured Mode */}
+                          {!selectedCategory &&
+                            viewMode === "featured" &&
+                            !searchQuery.trim() &&
+                            filteredServices.remainingCount > 0 && (
+                              <div className="text-center mt-6">
                                 <Button
                                   type="button"
                                   variant="outline"
-                                  size="sm"
-                                  onClick={clearFilters}
+                                  onClick={handleViewAllServices}
                                   className="gap-2"
                                 >
-                                  View All Services
+                                  View All {services?.length || 0} Services
+                                  <ArrowRight className="w-4 h-4" />
                                 </Button>
                               </div>
                             )}
+                        </>
+                      )}
+                    </div>
+                  )}
 
-                            {/* View All Services Button for Featured Mode */}
-                            {!selectedCategory &&
-                              viewMode === "featured" &&
-                              !searchQuery.trim() &&
-                              filteredServices.remainingCount > 0 && (
-                                <div className="text-center mt-6">
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={handleViewAllServices}
-                                    className="gap-2"
-                                  >
-                                    View All {services?.length || 0} Services
-                                    <ArrowRight className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                              )}
-                          </>
+                  {/* Step 2: Budget and Timeline */}
+                  {currentStep === 2 && (
+                    <div className="space-y-8">
+                      {/* Budget Selection */}
+                      <div>
+                        <div className="text-center mb-6">
+                          <Heart className="w-12 h-12 text-primary mx-auto mb-4" />
+                          <h3 className="text-xl font-semibold mb-2">
+                            What&apos;s your budget range?
+                          </h3>
+                          <p className="text-muted-foreground">
+                            This helps us recommend the best approach
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                          {budgetRanges.map((budget) => (
+                            <div
+                              key={budget.id}
+                              className={`p-3 border-2 rounded-xl cursor-pointer text-center transition-all hover:scale-105 active:scale-95 ${
+                                selectedBudget === budget.id
+                                  ? "border-primary bg-primary/5"
+                                  : "border-border hover:border-primary/50"
+                              }`}
+                              onClick={() => setSelectedBudget(budget.id)}
+                            >
+                              <span className="text-lg block mb-1">
+                                {budget.icon}
+                              </span>
+                              <span className="text-sm font-medium">
+                                {budget.label}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Timeline Selection */}
+                      <div>
+                        <div className="text-center mb-6">
+                          <Clock className="w-12 h-12 text-primary mx-auto mb-4" />
+                          <h3 className="text-xl font-semibold mb-2">
+                            When would you like to start?
+                          </h3>
+                          <p className="text-muted-foreground">
+                            Understanding your timeline helps us plan
+                            accordingly
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                          {timelineOptions.map((timeline) => (
+                            <div
+                              key={timeline.id}
+                              className={`p-3 border-2 rounded-xl cursor-pointer text-center transition-all hover:scale-105 active:scale-95 ${
+                                selectedTimeline === timeline.id
+                                  ? "border-primary bg-primary/5"
+                                  : "border-border hover:border-primary/50"
+                              }`}
+                              onClick={() => setSelectedTimeline(timeline.id)}
+                            >
+                              <span className="text-lg block mb-1">
+                                {timeline.icon}
+                              </span>
+                              <span className="text-sm font-medium">
+                                {timeline.label}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Step 3: Contact Information */}
+                  {currentStep === 3 && (
+                    <div className="space-y-6">
+                      <div className="text-center mb-8">
+                        <User className="w-12 h-12 text-primary mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold mb-2">
+                          Let&apos;s get to know you
+                        </h3>
+                        <p className="text-muted-foreground">
+                          Your contact information helps us reach out with the
+                          right details
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormField
+                          name="name"
+                          label="Full Name"
+                          placeholder="John Doe"
+                          required
+                        />
+                        <FormField
+                          name="email"
+                          label="Email Address"
+                          type="email"
+                          placeholder="john@example.com"
+                          required
+                        />
+                        <FormField
+                          name="phone"
+                          label="Phone Number (Optional)"
+                          type="tel"
+                          placeholder="(555) 123-4567"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormField
+                          name="company"
+                          label="Company (Optional)"
+                          placeholder="Your Company"
+                        />
+                        <FormField
+                          name="subject"
+                          label="Project Title"
+                          placeholder="My Awesome Project"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Step 4: Project Details */}
+                  {currentStep === 4 && (
+                    <div className="space-y-6">
+                      <div className="text-center mb-8">
+                        <FileText className="w-12 h-12 text-primary mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold mb-2">
+                          Tell us about your project
+                        </h3>
+                        <p className="text-muted-foreground">
+                          The more details you share, the better we can help you
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="message"
+                          className="text-sm font-medium"
+                        >
+                          Project Description{" "}
+                          <span className="text-destructive">*</span>
+                        </label>
+                        <textarea
+                          id="message"
+                          {...form.register("message")}
+                          rows={8}
+                          className="flex min-h-[200px] w-full rounded-xl border border-input bg-background px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                          placeholder="Describe your project, goals, and any specific requirements you have in mind. Include any relevant details about features, target audience, or technical preferences..."
+                        />
+                        {form.formState.errors.message && (
+                          <p className="text-sm text-destructive">
+                            {form.formState.errors.message.message}
+                          </p>
                         )}
-                      </motion.div>
-                    )}
+                      </div>
 
-                    {/* Step 2: Budget and Timeline */}
-                    {currentStep === 2 && (
-                      <motion.div
-                        key="step2"
-                        variants={stepVariants}
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                        transition={{
-                          duration: FORM_CONFIG.ANIMATION_DURATION,
-                        }}
-                        className="space-y-8"
-                      >
-                        {/* Budget Selection */}
-                        <div>
-                          <div className="text-center mb-6">
-                            <Heart className="w-12 h-12 text-primary mx-auto mb-4" />
-                            <h3 className="text-xl font-semibold mb-2">
-                              What&apos;s your budget range?
-                            </h3>
-                            <p className="text-muted-foreground">
-                              This helps us recommend the best approach
-                            </p>
-                          </div>
-
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                            {budgetRanges.map((budget) => (
-                              <motion.div
-                                key={budget.id}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                className={`p-3 border-2 rounded-xl cursor-pointer text-center transition-all ${
-                                  selectedBudget === budget.id
-                                    ? "border-primary bg-primary/5"
-                                    : "border-border hover:border-primary/50"
-                                }`}
-                                onClick={() => setSelectedBudget(budget.id)}
-                              >
-                                <span className="text-lg block mb-1">
-                                  {budget.icon}
-                                </span>
-                                <span className="text-sm font-medium">
-                                  {budget.label}
-                                </span>
-                              </motion.div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Timeline Selection */}
-                        <div>
-                          <div className="text-center mb-6">
-                            <Clock className="w-12 h-12 text-primary mx-auto mb-4" />
-                            <h3 className="text-xl font-semibold mb-2">
-                              When would you like to start?
-                            </h3>
-                            <p className="text-muted-foreground">
-                              Understanding your timeline helps us plan
-                              accordingly
-                            </p>
-                          </div>
-
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                            {timelineOptions.map((timeline) => (
-                              <motion.div
-                                key={timeline.id}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                className={`p-3 border-2 rounded-xl cursor-pointer text-center transition-all ${
-                                  selectedTimeline === timeline.id
-                                    ? "border-primary bg-primary/5"
-                                    : "border-border hover:border-primary/50"
-                                }`}
-                                onClick={() => setSelectedTimeline(timeline.id)}
-                              >
-                                <span className="text-lg block mb-1">
-                                  {timeline.icon}
-                                </span>
-                                <span className="text-sm font-medium">
-                                  {timeline.label}
-                                </span>
-                              </motion.div>
-                            ))}
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {/* Step 3: Contact Information */}
-                    {currentStep === 3 && (
-                      <motion.div
-                        key="step3"
-                        variants={stepVariants}
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                        transition={{
-                          duration: FORM_CONFIG.ANIMATION_DURATION,
-                        }}
-                        className="space-y-6"
-                      >
-                        <div className="text-center mb-8">
-                          <User className="w-12 h-12 text-primary mx-auto mb-4" />
-                          <h3 className="text-xl font-semibold mb-2">
-                            Let&apos;s get to know you
-                          </h3>
-                          <p className="text-muted-foreground">
-                            Your contact information helps us reach out with the
-                            right details
+                      {/* Project Summary */}
+                      <div className="p-4 bg-muted/50 rounded-xl">
+                        <h4 className="font-medium mb-2 flex items-center">
+                          <Sparkles className="w-4 h-4 mr-2 text-primary" />
+                          Project Summary
+                        </h4>
+                        <div className="space-y-1 text-sm text-muted-foreground">
+                          <p>
+                            <strong>Service:</strong>{" "}
+                            {services?.find((s) => s.id === selectedServiceId)
+                              ?.title || "Not selected"}
+                          </p>
+                          <p>
+                            <strong>Budget:</strong>{" "}
+                            {budgetRanges.find((b) => b.id === selectedBudget)
+                              ?.label || "Not selected"}
+                          </p>
+                          <p>
+                            <strong>Timeline:</strong>{" "}
+                            {timelineOptions.find(
+                              (t) => t.id === selectedTimeline
+                            )?.label || "Not selected"}
                           </p>
                         </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <FormField
-                            name="name"
-                            label="Full Name"
-                            placeholder="John Doe"
-                            required
-                          />
-                          <FormField
-                            name="email"
-                            label="Email Address"
-                            type="email"
-                            placeholder="john@example.com"
-                            required
-                          />
-                          <FormField
-                            name="phone"
-                            label="Phone Number (Optional)"
-                            type="tel"
-                            placeholder="(555) 123-4567"
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <FormField
-                            name="company"
-                            label="Company (Optional)"
-                            placeholder="Your Company"
-                          />
-                          <FormField
-                            name="subject"
-                            label="Project Title"
-                            placeholder="My Awesome Project"
-                          />
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {/* Step 4: Project Details */}
-                    {currentStep === 4 && (
-                      <motion.div
-                        key="step4"
-                        variants={stepVariants}
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                        transition={{
-                          duration: FORM_CONFIG.ANIMATION_DURATION,
-                        }}
-                        className="space-y-6"
-                      >
-                        <div className="text-center mb-8">
-                          <FileText className="w-12 h-12 text-primary mx-auto mb-4" />
-                          <h3 className="text-xl font-semibold mb-2">
-                            Tell us about your project
-                          </h3>
-                          <p className="text-muted-foreground">
-                            The more details you share, the better we can help
-                            you
-                          </p>
-                        </div>
-
-                        <div className="space-y-2">
-                          <label
-                            htmlFor="message"
-                            className="text-sm font-medium"
-                          >
-                            Project Description{" "}
-                            <span className="text-destructive">*</span>
-                          </label>
-                          <textarea
-                            id="message"
-                            {...form.register("message")}
-                            rows={8}
-                            className="flex min-h-[200px] w-full rounded-xl border border-input bg-background px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
-                            placeholder="Describe your project, goals, and any specific requirements you have in mind. Include any relevant details about features, target audience, or technical preferences..."
-                          />
-                          {form.formState.errors.message && (
-                            <p className="text-sm text-destructive">
-                              {form.formState.errors.message.message}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Project Summary */}
-                        <div className="p-4 bg-muted/50 rounded-xl">
-                          <h4 className="font-medium mb-2 flex items-center">
-                            <Sparkles className="w-4 h-4 mr-2 text-primary" />
-                            Project Summary
-                          </h4>
-                          <div className="space-y-1 text-sm text-muted-foreground">
-                            <p>
-                              <strong>Service:</strong>{" "}
-                              {services.find((s) => s.id === selectedServiceId)
-                                ?.title || "Not selected"}
-                            </p>
-                            <p>
-                              <strong>Budget:</strong>{" "}
-                              {budgetRanges.find((b) => b.id === selectedBudget)
-                                ?.label || "Not selected"}
-                            </p>
-                            <p>
-                              <strong>Timeline:</strong>{" "}
-                              {timelineOptions.find(
-                                (t) => t.id === selectedTimeline
-                              )?.label || "Not selected"}
-                            </p>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Navigation Buttons */}
                   <div className="flex justify-between mt-8 pt-6 border-t">
