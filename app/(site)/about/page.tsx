@@ -76,9 +76,6 @@ export default function AboutPage() {
         {/* Success Stats */}
         <AboutStatsSection />
 
-        {/* Local Team */}
-        <AboutTeamSection />
-
         {/* Contact CTA */}
         <AboutCtaSection />
       </main>

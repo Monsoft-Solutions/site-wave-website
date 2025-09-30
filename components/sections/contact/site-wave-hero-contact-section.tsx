@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useInView } from "react-intersection-observer";
+import { motion } from "framer-motion";
 import {
   Phone,
   Mail,
@@ -83,13 +82,6 @@ export function SiteWaveHeroContactSection() {
   const [isClient, setIsClient] = useState(false);
   const [wavePositions, setWavePositions] = useState<{ x: number; y: number }[]>([]);
 
-  const [ref, inView] = useInView({
-    threshold: 0.3,
-    triggerOnce: true,
-  });
-
-  const { scrollY } = useScroll();
-  const y = useTransform(scrollY, [0, 500], [0, -150]);
 
   // Get contact info from site config
   const { email, phoneHref, formattedPhone, emailHref } = useContactInfo();
@@ -177,10 +169,7 @@ export function SiteWaveHeroContactSection() {
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-soft-sand via-background to-ocean-blue/10 min-h-[90vh] flex items-center pt-20">
       {/* Coastal Background Pattern */}
-      <motion.div
-        className="absolute inset-0 bg-grid-ocean-blue/5 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]"
-        style={{ y }}
-      />
+      <div className="absolute inset-0 bg-grid-ocean-blue/5 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]" />
 
       {/* Floating Wave Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -195,58 +184,19 @@ export function SiteWaveHeroContactSection() {
         ))}
       </div>
 
-      {/* Animated Background Gradient Orbs */}
-      <motion.div
-        className="absolute top-1/4 left-1/4 w-96 h-96 bg-ocean-blue/20 rounded-full blur-3xl"
-        animate={{
-          scale: [1, 1.3, 1],
-          rotate: [0, 120, 240, 360],
-        }}
-        transition={{
-          duration: 20,
-          repeat: Infinity,
-          ease: "linear",
-        }}
-      />
-      <motion.div
-        className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-coral-orange/20 rounded-full blur-3xl"
-        animate={{
-          scale: [1.2, 1, 1.2],
-          rotate: [360, 240, 120, 0],
-        }}
-        transition={{
-          duration: 25,
-          repeat: Infinity,
-          ease: "linear",
-        }}
-      />
 
-      <div className="container relative z-10" ref={ref}>
+      <div className="container relative z-10">
         <div className="mx-auto max-w-7xl">
           {/* Main Content */}
           <div className="text-center mb-16">
             {/* Status Badge */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={inView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="mb-6"
-            >
+            <div className="mb-6">
               <Badge
                 variant="outline"
                 className="px-6 py-3 text-sm border-ocean-blue/30 bg-background/90 backdrop-blur-sm hover:bg-ocean-blue/10 transition-all duration-300"
               >
                 <div className="flex items-center space-x-2">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{
-                      duration: 4,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                  >
-                    <Waves className="w-4 h-4 text-ocean-blue" />
-                  </motion.div>
+                  <Waves className="w-4 h-4 text-ocean-blue" />
                   <Clock className="w-3 h-3" />
                   <span>{currentTime}</span>
                   <div
@@ -261,53 +211,34 @@ export function SiteWaveHeroContactSection() {
                   </span>
                 </div>
               </Badge>
-            </motion.div>
+            </div>
 
             {/* Main Headline */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, delay: 0.3 }}
-            >
+            <div>
               <h1 className="text-4xl font-bold font-heading tracking-tight sm:text-6xl lg:text-7xl mb-6 text-deep-navy">
                 <span className="block">Let&apos;s Grow Your</span>
                 <span className="block text-ocean-blue">SWFL Business</span>
               </h1>
-            </motion.div>
+            </div>
 
             {/* Free Consultation Banner */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="mb-8"
-            >
+            <div className="mb-8">
               <div className="inline-flex items-center gap-3 bg-gradient-to-r from-coral-orange to-coral-orange/80 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg">
                 <Gift className="w-5 h-5" />
                 <span>FREE Consultation • No Obligation • Local Experts</span>
               </div>
-            </motion.div>
+            </div>
 
             {/* Description */}
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, delay: 0.5 }}
-              className="text-xl text-muted-foreground max-w-4xl mx-auto leading-relaxed mb-8"
-            >
+            <p className="text-xl text-muted-foreground max-w-4xl mx-auto leading-relaxed mb-8">
               Ready to take your Southwest Florida business to the next level?
               Our local team specializes in websites, SEO, digital marketing,
               and automation solutions that help businesses in Cape Coral, Fort
               Myers, and Naples attract more customers and grow confidently.
-            </motion.p>
+            </p>
 
             {/* Location Highlights */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="flex flex-wrap gap-3 justify-center mb-12"
-            >
+            <div className="flex flex-wrap gap-3 justify-center mb-12">
               {serviceLocations.map((location) => (
                 <div
                   key={location}
@@ -319,23 +250,13 @@ export function SiteWaveHeroContactSection() {
                   </span>
                 </div>
               ))}
-            </motion.div>
+            </div>
           </div>
 
           {/* Contact Methods Grid */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.7 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16"
-          >
-            {contactMethods.map((method, index) => (
-              <motion.div
-                key={method.title}
-                initial={{ opacity: 0, y: 30 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: 0.8 + index * 0.1 }}
-              >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+            {contactMethods.map((method) => (
+              <div key={method.title}>
                 <Card className="relative h-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-border hover:border-ocean-blue/30 group cursor-pointer">
                   <CardContent className="p-6 text-center">
                     <div
@@ -361,17 +282,12 @@ export function SiteWaveHeroContactSection() {
                     </div>
                   </CardContent>
                 </Card>
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
 
           {/* Free Consultation Benefits */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.8, delay: 1.2 }}
-            className="max-w-4xl mx-auto"
-          >
+          <div className="max-w-4xl mx-auto">
             <Card className="bg-gradient-to-br from-ocean-blue/5 to-coral-orange/5 border-ocean-blue/20">
               <CardContent className="p-8">
                 <div className="text-center mb-6">
@@ -399,18 +315,12 @@ export function SiteWaveHeroContactSection() {
                     onClick={scrollToForm}
                   >
                     Start Your Free Consultation
-                    <motion.div
-                      className="ml-2"
-                      whileHover={{ x: 5 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <ArrowRight className="w-4 h-4" />
-                    </motion.div>
+                    <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>
