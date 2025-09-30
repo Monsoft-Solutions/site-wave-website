@@ -7,7 +7,6 @@ import { AboutHeroSection } from "@/components/about/about-hero-section";
 import { AboutMissionSection } from "@/components/about/about-mission-section";
 import { AboutValuesSection } from "@/components/about/about-values-section";
 import { AboutStatsSection } from "@/components/about/about-stats-section";
-import { AboutTeamSection } from "@/components/about/about-team-section";
 import { AboutCtaSection } from "@/components/about/about-cta-section";
 
 export default function AboutPage() {
